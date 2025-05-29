@@ -1,0 +1,70 @@
+version: '3.8'
+
+networks:
+  minha_rede:
+    driver: bridge
+services:
+  db:
+    build:
+      context: ./backend/.docker/mongodb
+      args:
+        MONGO_VERSION: "7.0"
+    container_name: avenant-db
+    environment:
+      MONGO_INITDB_DATABASE: 'avenant'
+      MONGO_INITDB_ROOT_USERNAME: 'root'
+      MONGO_INITDB_PASSWORD: 'password'
+      MONGO_INITDB_ROOT_PASSWORD: 'password'
+      MONGO_REPLICA_HOST: db
+      MONGO_REPLICA_PORT: 27017
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb:/var/lib/mongodb
+    networks:
+      - minha_rede
+
+  db-test:
+    build:
+      context: ./backend/.docker/mongodb
+      args:
+        MONGO_VERSION: "7.0"
+    container_name: integration-test-db
+    restart: always
+    environment:
+      MONGO_INITDB_DATABASE: 'avenant'
+      MONGO_INITDB_PASSWORD: 'password'
+      MONGO_INITDB_ROOT_PASSWORD: 'password'
+      MONGO_REPLICA_HOST: integration-test-db
+      MONGO_REPLICA_PORT: 27019
+    ports:
+      - "27019:27017"
+    networks:
+      - minha_rede
+
+  api:
+    container_name: avenant-api
+    build: 
+      context: ./backend
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+      - "5555:5555"
+    networks:
+      - minha_rede
+
+  web:
+    container_name: avenant-web
+    build:
+      context: ./frontend
+    depends_on:
+      - api
+      - db
+    ports:
+      - "3000:3000" 
+    networks:
+      - minha_rede
+
+volumes:
+  mongodb: {}
