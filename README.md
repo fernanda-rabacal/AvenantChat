@@ -1,8 +1,8 @@
 # Avenant Chat App
 
-🇺🇸 This is a full stack project of a chat web app where you can contact your friend in real time, see available chat rooms and enter as many rooms as you like. This project is made with Reactjs and Nest.js, also using Sass and Prisma, MongoDB database and Docker.
+🇺🇸 This is a full stack project of a chat web app where you can contact your friend in real time, see available chat rooms and enter as many rooms as you like. This project is made with Reactjs and Nest.js, also using Sass and Prisma, Postgres database and Docker.
 
-🇧🇷 Este é um projeto Full Stack de uma aplicação web de Chat onde você pode contactar seus amigos em tempo real, ver salas de chat disponíveis e entrar em quantas salas você quiser. Este projeto foi feito com Reactjs e Nest.js, também usando Sass e Prisma, o banco de dados MongoDB e Docker.
+🇧🇷 Este é um projeto Full Stack de uma aplicação web de Chat onde você pode contactar seus amigos em tempo real, ver salas de chat disponíveis e entrar em quantas salas você quiser. Este projeto foi feito com Reactjs e Nest.js, também usando Sass e Prisma, o banco de dados Postgres e Docker.
 
 #### Funcionalities / Funcionalidades:
 
@@ -14,10 +14,10 @@
 ### How to run the project / Como rodar o Projeto:
 
 🇺🇸 This repository has the frontend and the backend of the application. To run the project with Docker, you need to install it. Clone the repository to your computer and follow the steps to run the project with Docker. 
-To run this project without Docker, you need to have Node.js and npm installed. Also, you need to have Mongodb Compass. After you cloned the repository, enter in the respectives folders and see the steps below to run the code.
+To run this project without Docker, you need to have Node.js and npm installed. Also, you can connect to Postgres Database through Dbeaver. After you cloned the repository, enter in the respectives folders and see the steps below to run the code.
 
 🇧🇷 Este repositório contém o frontend e o backend da aplicação. Para rodar o projeto com Docker, é necessário tê-lo instalado. Clone o repositório no seu computador e siga os passos para rodar o projeto com Docker.
-Para rodar este projeto sem Docker, você precisa ter o Node.js e o npm instalados. Além disso, é necessário ter o MongoDB Compass. Depois de clonar o repositório, entre nas pastas correspondentes e veja os passos abaixo para rodar o código.
+Para rodar este projeto sem Docker, você precisa ter o Node.js e o npm instalados. Além disso, você pode se conectar ao banco Postgres pelo Dbeaver. Depois de clonar o repositório, entre nas pastas correspondentes e veja os passos abaixo para rodar o código.
 
   #### Docker
 
@@ -28,10 +28,10 @@ Para rodar este projeto sem Docker, você precisa ter o Node.js e o npm instalad
 
   #### Backend
 
-  🇺🇸 Make sure to make a connection to MongoDb using the credentials on the .env file. 
+  🇺🇸 Make sure to make a connection to Postgres using the credentials on the .env file. 
   Enter the backend folder on terminal and run:
 
-  🇧🇷 Certifique-se de fazer a conexão com o MongoDB usando as credenciais do arquivo .env.
+  🇧🇷 Certifique-se de fazer a conexão com o Postgres usando as credenciais do arquivo .env.
   Entre na pasta do backend pelo terminal e execute:
 
   ##### `npm install` to install the dependencies / para instalar as dependencias.

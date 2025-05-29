@@ -5,42 +5,37 @@ networks:
     driver: bridge
 services:
   db:
-    build:
-      context: ./backend/.docker/mongodb
-      args:
-        MONGO_VERSION: "7.0"
     container_name: avenant-db
+    build: 
+      context: ./backend
     environment:
-      MONGO_INITDB_DATABASE: 'avenant'
-      MONGO_INITDB_ROOT_USERNAME: 'root'
-      MONGO_INITDB_PASSWORD: 'password'
-      MONGO_INITDB_ROOT_PASSWORD: 'password'
-      MONGO_REPLICA_HOST: db
-      MONGO_REPLICA_PORT: 27017
+      - POSTGRES_PASSWORD=docker
+      - POSTGRES_DB=avenant
     ports:
-      - "27017:27017"
+      - "5432:5432"
     volumes:
-      - mongodb:/var/lib/mongodb
+      - .docker/dbdata:/var/lib/postgresql/dbdata
     networks:
       - minha_rede
 
   db-test:
-    build:
-      context: ./backend/.docker/mongodb
-      args:
-        MONGO_VERSION: "7.0"
     container_name: integration-test-db
+    build: 
+      context: ./backend
     restart: always
     environment:
-      MONGO_INITDB_DATABASE: 'avenant'
-      MONGO_INITDB_PASSWORD: 'password'
-      MONGO_INITDB_ROOT_PASSWORD: 'password'
-      MONGO_REPLICA_HOST: integration-test-db
-      MONGO_REPLICA_PORT: 27019
+      - POSTGRES_PASSWORD=docker
+      - POSTGRES_DB=avenant
     ports:
-      - "27019:27017"
+      - "5433:5432"
     networks:
       - minha_rede
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
 
   api:
     container_name: avenant-api
@@ -61,10 +56,11 @@ services:
     depends_on:
       - api
       - db
+      - redis
     ports:
       - "3000:3000" 
     networks:
       - minha_rede
-
-volumes:
-  mongodb: {}
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
