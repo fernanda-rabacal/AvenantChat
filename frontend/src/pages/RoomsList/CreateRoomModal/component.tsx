@@ -1,34 +1,61 @@
+import { useState } from "react";
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod";
+import z  from 'zod'
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus } from "lucide-react";
-import { useState } from "react";
+import { createRoomSchema } from "@/lib/validationSchemas";
+import { useNavigate } from "react-router-dom";
 
-export function CreateRoomModal() {
+interface CreateRoomData {
+  name: string;
+}
+
+interface CreateRoomModalProps {
+  categories: string[]
+}
+
+type CreateRoomFormData = z.infer<typeof createRoomSchema>
+
+export function CreateRoomModal({ categories }: CreateRoomModalProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isCreating, setIsCreating] = useState(false)
-  const allCategories = ["All" ]
+  const navigate = useNavigate()
+  const { 
+    register,
+    handleSubmit,
+    clearErrors,
+    reset,
+    formState: { errors, isSubmitting }
+  } = useForm<CreateRoomFormData>({
+    resolver: zodResolver(createRoomSchema)
+  })
 
-  const handleCreateRoom = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    setIsCreating(true)
-
+  const handleCreateRoom = async (data: CreateRoomData) => {
+    const mockRoomId = 1
     // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000))
-
     setIsModalOpen(false)
-    setIsCreating(false)
 
-    // Simulate navigation to the new chat room
-    // In a real app: router.push(`/chat/${newRoom.id}`)
+    navigate(`/chat/${mockRoomId}`)
   }
 
-  const handleInputChange = (field: string, value: string | boolean) => {
-    console.log(field, value)
+  const handleCancelCreateRoom = () => {
+     setIsModalOpen(false)
+     clearErrors()
+     reset()
   }
 
   return (
@@ -47,30 +74,30 @@ export function CreateRoomModal() {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleCreateRoom} className="space-y-6">
-          <div className="space-y-4">
-            {/* Room Name */}
+        <form onSubmit={handleSubmit(handleCreateRoom)} className="space-y-6">
+          <div className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="room-name">Room Name *</Label>
+              <Label htmlFor="name">Room Name *</Label>
               <Input
-                id="room-name"
+                id="name"
                 placeholder="Enter room name..."
-                value={''}
-                onChange={(e) => handleInputChange("name", e.target.value)}
                 maxLength={50}
+                error={errors.name?.message}
+                {...register("name")}
               />
-              <p className="text-xs text-muted-foreground">{}/50 characters</p>
             </div>
-
-            {/* Category */}
             <div className="space-y-2">
-              <Label htmlFor="room-category">Category *</Label>
-              <Select value={''} onValueChange={(value) => handleInputChange("category", value)}>
-                <SelectTrigger className="w-full">
+              <Label htmlFor="category">Category *</Label>
+              <Select>
+                <SelectTrigger  
+                  id="category" 
+                  className="w-full"
+                  error={errors.category?.message}
+                  {...register("category")} >
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {allCategories.map((category) => (
+                  {categories.map((category) => (
                     <SelectItem key={category} value={category}>
                       {category}
                     </SelectItem>
@@ -81,25 +108,24 @@ export function CreateRoomModal() {
 
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="room-description">Description</Label>
+              <Label htmlFor="description">Description</Label>
               <Textarea
-                id="room-description"
+                id="description"
                 placeholder="Describe what this room is about..."
-                value={''}
-                onChange={(e) => handleInputChange("description", e.target.value)}
                 maxLength={200}
                 rows={3}
+                error={errors.description?.message}
+                {...register("description")}
               />
-              <p className="text-xs text-muted-foreground">{''}/200 characters</p>
             </div>
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} disabled={isCreating}>
+            <Button type="button" variant="outline" onClick={handleCancelCreateRoom} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isCreating}>
-              {isCreating ? "Creating..." : "Create Room"}
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Creating..." : "Create Room"}
             </Button>
           </DialogFooter>
         </form>

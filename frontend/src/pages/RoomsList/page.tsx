@@ -7,98 +7,15 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { CreateRoomModal } from "./CreateRoomModal/component"
-
-interface ChatRoom {
-  id: string
-  name: string
-  description: string
-  memberCount: number
-  isOnline: boolean
-  lastActivity: string
-  category: string
-  avatar?: string
-}
-
-const mockChatRooms: ChatRoom[] = [
-  {
-    id: "1",
-    name: "General Discussion",
-    description: "Open chat for general topics and casual conversation",
-    memberCount: 1247,
-    isOnline: true,
-    lastActivity: "2 minutes ago",
-    category: "General",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "2",
-    name: "Tech Talk",
-    description: "Discuss the latest in technology, programming, and innovation",
-    memberCount: 892,
-    isOnline: true,
-    lastActivity: "5 minutes ago",
-    category: "Technology",
-  },
-  {
-    id: "3",
-    name: "Design Studio",
-    description: "Share designs, get feedback, and discuss UI/UX trends",
-    memberCount: 456,
-    isOnline: true,
-    lastActivity: "12 minutes ago",
-    category: "Design",
-  },
-  {
-    id: "4",
-    name: "Gaming Hub",
-    description: "Connect with fellow gamers and discuss your favorite games",
-    memberCount: 2103,
-    isOnline: true,
-    lastActivity: "1 minute ago",
-    category: "Gaming",
-  },
-  {
-    id: "5",
-    name: "Project Alpha",
-    description: "Private workspace for Project Alpha team members",
-    memberCount: 12,
-    isOnline: true,
-    lastActivity: "30 minutes ago",
-    category: "Work",
-  },
-  {
-    id: "6",
-    name: "Music Lovers",
-    description: "Share your favorite tracks and discover new music",
-    memberCount: 678,
-    isOnline: false,
-    lastActivity: "2 hours ago",
-    category: "Music",
-  },
-  {
-    id: "7",
-    name: "Book Club",
-    description: "Monthly book discussions and reading recommendations",
-    memberCount: 234,
-    isOnline: true,
-    lastActivity: "45 minutes ago",
-    category: "Literature",
-  },
-  {
-    id: "8",
-    name: "Fitness & Health",
-    description: "Share workout tips, healthy recipes, and motivation",
-    memberCount: 567,
-    isOnline: true,
-    lastActivity: "15 minutes ago",
-    category: "Health",
-  },
-]
+import { mockChatRooms } from "@/data/mocks"
+import { Header } from "@/components/Header/component"
+import { useNavigate } from "react-router-dom"
 
 export default function ChatRoomsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
 
+  const navigate = useNavigate()
   const categories = ["All", ...Array.from(new Set(mockChatRooms.map((room) => room.category)))]
 
   const filteredRooms = mockChatRooms.filter((room) => {
@@ -109,12 +26,16 @@ export default function ChatRoomsPage() {
     return matchesSearch && matchesCategory
   })
 
-  const handleJoinRoom = (roomId: string) => {
+  const handleJoinRoom = (roomId: string | undefined) => {
     console.log(`Joining room ${roomId}`)
+
+    navigate(`/chat/${roomId}`)
   }
 
   return (
     <div className="min-h-screen bg-background">
+      <Header />
+
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8 flex items-center justify-between">
           <div>
@@ -122,7 +43,7 @@ export default function ChatRoomsPage() {
             <p className="text-muted-foreground text-lg">Join conversations and connect with communities</p>
           </div>
 
-          <CreateRoomModal />
+          <CreateRoomModal categories={categories} />
         </div>
 
         <div className="mb-8 space-y-4">
@@ -183,7 +104,7 @@ export default function ChatRoomsPage() {
                 </div>
                 <Button
                   className="w-full"
-                  onClick={() => handleJoinRoom(room.id)}
+                  onClick={() => handleJoinRoom(room?.id)}
                   variant={"default"}
                 >
                   Join Room

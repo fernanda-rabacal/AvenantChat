@@ -34,7 +34,7 @@ export function UserChatList({ user, chatRooms, showChatList, isMobile, toggleUs
           isMobile && showChatList ? "fixed inset-y-0 left-0 z-40 w-72" : "",
         )}
       >
-        <NavLink to="/" className="flex justify-center">
+        <NavLink to="/chat-rooms" className="flex justify-center">
           <Button variant="link">
             <ChevronLeft size={20}/>
             Chat rooms list 
