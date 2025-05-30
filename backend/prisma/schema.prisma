@@ -1,15 +1,73 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgres"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id_user    Int      @id @default(autoincrement())
+  email      String   @unique
+  name       String
+  avatar_url String
+  password   String
+  created_at DateTime @default(now())
+
+  chat_rooms      ChatRoom[]
+  ChatMessages    ChatMessages[]
+  ChatRoomMembers ChatRoomMembers[]
+
+  @@map("users")
+}
+
+model ChatRoom {
+  id_chat_room  Int      @id @default(autoincrement())
+  name          String   @db.VarChar(255)
+  category      String
+  description   String?
+  created_at    DateTime @default(now())
+  created_by_id Int
+
+  created_by      User              @relation(fields: [created_by_id], references: [id_user])
+  ChatMessages    ChatMessages[]
+  ChatRoomMembers ChatRoomMembers[]
+
+  @@map("chat_rooms")
+}
+
+model ChatRoomMembers {
+  id_chat_room_member Int @id @default(autoincrement())
+  id_user             Int
+  id_chat_room        Int
+
+  user         User           @relation(fields: [id_user], references: [id_user])
+  chat_room    ChatRoom       @relation(fields: [id_chat_room], references: [id_chat_room])
+  ChatMessages ChatMessages[]
+
+  @@map("chat_room_members")
+  @@unique([id_user, id_chat_room])
+  @@index([id_chat_room])
+  @@index([id_user])
+}
+
+model ChatMessages {
+  id_message   Int      @id @default(autoincrement())
+  content      String   @db.VarChar()
+  sent_at      DateTime @default(now())
+  edited_at    DateTime
+  is_deleted   Boolean  @default(false)
+  id_user      Int
+  id_chat_room Int
+
+  chat_room                          ChatRoom         @relation(fields: [id_chat_room], references: [id_chat_room])
+  user                               User             @relation(fields: [id_user], references: [id_user])
+  ChatRoomMembers                    ChatRoomMembers? @relation(fields: [chatRoomMembersId_chat_room_member], references: [id_chat_room_member])
+  chatRoomMembersId_chat_room_member Int?
+
+  @@index([id_chat_room, sent_at])
+  @@index([id_user, sent_at])
+  @@map("chat_messages")
 }
