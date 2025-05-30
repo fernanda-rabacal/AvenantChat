@@ -1,10 +1,10 @@
-import { ChevronLeft, ChevronRight, Settings } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "../../../../components/ui/avatar";
-import { Button } from "../../../../components/ui/button";
-import { ScrollArea } from "../../../../components/ui/scroll-area";
-import { cn } from "@/lib/utils";
-import type { ChatRoom, User } from "@/@types/interfaces";
 import { NavLink } from "react-router-dom";
+import { ChevronLeft, ChevronRight, Settings } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import type { ChatRoom, User } from "@/@types/interfaces";
+import { cn } from "@/lib/utils";
 
 interface UserChatListProps {
   user: User;
@@ -34,10 +34,10 @@ export function UserChatList({ user, chatRooms, showChatList, isMobile, toggleUs
           isMobile && showChatList ? "fixed inset-y-0 left-0 z-40 w-72" : "",
         )}
       >
-        <NavLink to="/chat-rooms" className="flex justify-center">
+        <NavLink to="/rooms" className="flex justify-center pt-2">
           <Button variant="link">
-            <ChevronLeft size={20}/>
-            Chat rooms list 
+            <ChevronLeft size={24} />
+            Chat Rooms 
           </Button>
         </NavLink>
 
