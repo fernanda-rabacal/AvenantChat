@@ -9,11 +9,11 @@ export const router = createBrowserRouter([
     element: <HomePage />,
   },
   {
-    path: '/chat-rooms',
+    path: '/rooms',
     element: <RoomsListPage />,
   },
   {
-    path: '/chat/:roomId',
+    path: '/rooms/:roomId',
     element: <ChatRoom />,
   },
 ]);

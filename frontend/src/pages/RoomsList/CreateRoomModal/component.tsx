@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigate } from "react-router-dom";
 import z  from 'zod'
-import { Button } from "@/components/ui/button";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Plus } from "lucide-react";
+
 import { 
   Dialog, 
   DialogContent, 
@@ -12,24 +14,27 @@ import {
   DialogTitle, 
   DialogTrigger 
 } from "@/components/ui/dialog";
+import { Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus } from "lucide-react";
 import { createRoomSchema } from "@/lib/validationSchemas";
-import { useNavigate } from "react-router-dom";
-
 interface CreateRoomData {
   name: string;
+  category: string;
+  description?: string;
 }
-
 interface CreateRoomModalProps {
   categories: string[]
 }
 
 type CreateRoomFormData = z.infer<typeof createRoomSchema>
-
 export function CreateRoomModal({ categories }: CreateRoomModalProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const navigate = useNavigate()
