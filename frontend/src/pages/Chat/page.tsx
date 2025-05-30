@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type FormEvent } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Send, Search, MessageCircle } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -11,14 +11,32 @@ import type { ChatRoom, Message } from "@/@types/interfaces"
 import { ChatMembersList } from "./components/ChatMembersList/component"
 import { UserChatList } from "./components/UserChatList/component"
 import { mockMessages, mockChatRooms, mockUsers } from "@/data/mocks"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { sendMessageSchema } from "@/lib/validationSchemas"
+import type { z } from "zod"
+import { formatTimestamp } from "@/lib/formatTimestamp"
+import { verifyShoudGroupMessage } from "@/lib/verifyShouldGroupMessage"
+
+type SendMessageFormData = z.infer<typeof sendMessageSchema>
 
 export default function ChatRoom() {
   const [messages, setMessages] = useState<Message[]>(mockMessages)
-  const [messageInput, setMessageInput] = useState("")
   const [showMembers, setShowMembers] = useState(true)
   const [showChatList, setShowChatList] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const isMobile = useMobile()
+  const { 
+      register,
+      handleSubmit,
+      reset,
+      watch,
+      formState: { isSubmitting }
+    } = useForm<SendMessageFormData>({
+      resolver: zodResolver(sendMessageSchema)
+    })
+
+  const message = watch('message')
 
   useEffect(() => {
     if (isMobile) {
@@ -34,36 +52,17 @@ export default function ChatRoom() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  const handleSendMessage = (e: FormEvent) => {
-    e.preventDefault()
-    if (!messageInput.trim()) return
-
-    const newMessage: Message = {
+  const handleSendMessage = (data: SendMessageFormData) => {
+    const newMessage = {
       id: `msg-${Date.now()}`,
-      content: messageInput,
+      content: data.message,
       timestamp: new Date(),
       user: mockUsers[0],
-      isNew: true,
+      chatId: 1
     }
 
     setMessages([...messages, newMessage])
-    setMessageInput("")
-  }
-
-  const formatTimestamp = (date: Date) => {
-    const now = new Date()
-    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60)
-
-    if (diffInHours < 24 && date.getDate() === now.getDate()) {
-      return `Today at ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
-    } else if (diffInHours < 48 && date.getDate() === now.getDate() - 1) {
-      return `Yesterday at ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
-    } else {
-      return (
-        date.toLocaleDateString([], { month: "short", day: "numeric" }) +
-        ` at ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
-      )
-    }
+    reset()
   }
 
   const toggleUserChatList = () => {
@@ -112,12 +111,7 @@ export default function ChatRoom() {
         <ScrollArea className="flex-1 p-4 h-[75%]">
           <div>
             {messages.map((message, index) => {
-              const prevMessage = index > 0 ? messages[index - 1] : null
-              const isLastMessage = messages.length - index === 1
-              const shouldGroup =
-                prevMessage &&
-                prevMessage.user.id === message.user.id &&
-                message.timestamp.getTime() - prevMessage.timestamp.getTime() < 5 * 60 * 1000 // 5 minutes
+              const { shouldGroup, isLastMessage } = verifyShoudGroupMessage(message, index, messages)
 
               return (
                 <div
@@ -150,7 +144,7 @@ export default function ChatRoom() {
         </ScrollArea>
 
         <div className="p-4 border-t">
-          <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
+          <form onSubmit={handleSubmit(handleSendMessage)} className="flex items-center space-x-2">
             {/* <Button
               type="button"
               variant="ghost"
@@ -165,10 +159,10 @@ export default function ChatRoom() {
 
             <div className="relative flex-1">
               <Input
+                id="message"
                 placeholder="Type here"
-                value={messageInput}
-                onChange={(e) => setMessageInput(e.target.value)}
                 className="pr-20 py-5"
+                {...register("message")}
               />
               {/* <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1">
                 <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
@@ -183,7 +177,7 @@ export default function ChatRoom() {
               </div> */}
             </div>
 
-            <Button type="submit" size="lg" className="flex-shrink-0">
+            <Button type="submit" size="lg" className="flex-shrink-0" disabled={isSubmitting || !message}>
               <Send size={22} />
             </Button>
           </form>
