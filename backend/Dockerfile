@@ -12,12 +12,17 @@ RUN npm install -g @nestjs/cli
 
 COPY . .
 
+COPY .env .env
+
 RUN chown -R node:node /avenant-api
+
+COPY ./.docker/entrypoint.sh ./.docker/entrypoint.sh
+
+RUN chmod +x ./.docker/entrypoint.sh
 
 USER node
 
 RUN npm run build && npx prisma generate
 
-EXPOSE 8080
+ENTRYPOINT ["./.docker/entrypoint.sh"]
 
-CMD ["npm", "run", "start:prod"]

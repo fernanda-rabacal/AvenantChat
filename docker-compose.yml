@@ -6,8 +6,7 @@ networks:
 services:
   db:
     container_name: avenant-db
-    build: 
-      context: ./backend
+    image: postgres:15
     environment:
       - POSTGRES_PASSWORD=docker
       - POSTGRES_DB=avenant
@@ -20,8 +19,7 @@ services:
 
   db-test:
     container_name: integration-test-db
-    build: 
-      context: ./backend
+    image: postgres:15
     restart: always
     environment:
       - POSTGRES_PASSWORD=docker
@@ -43,11 +41,14 @@ services:
       context: ./backend
     depends_on:
       - db
+      - redis
     ports:
       - "8080:8080"
       - "5555:5555"
     networks:
       - minha_rede
+    env_file:
+    - ./backend/.env
 
   web:
     container_name: avenant-web
@@ -55,12 +56,7 @@ services:
       context: ./frontend
     depends_on:
       - api
-      - db
-      - redis
     ports:
       - "5173:5173" 
     networks:
       - minha_rede
-    environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
