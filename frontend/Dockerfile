@@ -2,14 +2,14 @@ FROM node:lts-alpine
 
 WORKDIR /avenant-web
 
-COPY package.json package-lock.json /avenant-web/
+COPY package.json package-lock.json ./
 
 RUN npm i 
 
-COPY . /avenant-web/
+COPY . .
 
 RUN npm run build
 
 EXPOSE 5173
 
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "start"]
