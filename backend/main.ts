@@ -6,8 +6,8 @@ import { ConflictInterceptor } from './src/common/errors/interceptors/conflict.i
 import { DatabaseInterceptor } from './src/common/errors/interceptors/database.interceptor';
 import { UnauthorizedInterceptor } from './src/common/errors/interceptors/unauthorized.interceptor';
 import { NotFoundInterceptor } from './src/common/errors/interceptors/not-found.interceptor';
-import { RedisIOAdapter } from './src/adapters/redis-io.adapter';
 import { ConfigService } from '@nestjs/config';
+import { SocketIOAdapter } from 'src/adapters/socket-io.adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -18,6 +18,7 @@ async function bootstrap() {
     .build();
 
   const configService = app.get(ConfigService);
+  const clientPort = parseInt(configService.get('PORT'));
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
@@ -37,9 +38,14 @@ async function bootstrap() {
     new NotFoundInterceptor(),
   );
 
-  const redisIOAdapter = new RedisIOAdapter(app, configService);
-  app.useWebSocketAdapter(redisIOAdapter);
+  app.enableCors({
+    origin: [
+      `http://localhost:${clientPort}`,
+      new RegExp(`/^http:\/\/192\.168\.1\.([1-9]|[1-9]\d):${clientPort}$/`),
+    ],
+  });
+  app.useWebSocketAdapter(new SocketIOAdapter(app, configService));
 
-  await app.listen(process.env.PORT || 3000);
+  await app.listen(process.env.PORT || 8080);
 }
 bootstrap();
