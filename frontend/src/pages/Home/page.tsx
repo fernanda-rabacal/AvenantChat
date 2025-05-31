@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom"
 export default function HomePage() {
   const currentYear = new Date().getFullYear()
   const navigate = useNavigate()
-  const { setIsOpen } = useAuthModal()
+  const { setIsOpen, isOpen } = useAuthModal()
 
   const logged = false
 
@@ -23,8 +23,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-background/80 flex flex-col">
       <Header />
-      <AuthModal />
-
+      <AuthModal isOpen={isOpen} setIsOpen={setIsOpen} />
       <main className="flex-1 flex flex-col items-center justify-center text-center px-4 relative overflow-hidden">
         <div className="max-w-3xl mx-auto relative z-10">
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-indigo-500">

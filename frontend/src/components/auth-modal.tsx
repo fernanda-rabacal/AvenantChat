@@ -5,31 +5,28 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { toast } from "sonner" 
-import { useForm } from "react-hook-form"
+import { useForm, type FieldErrors } from "react-hook-form"
 import { loginFormSchema, registerFormSchema } from "@/utils/validationSchemas"
 import type { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useAuthModal } from "@/hooks/useAuthModal"
-
-interface LoginData {
-  email: string;
-  password: string;
-}
-
-interface RegisterData extends LoginData {
-  name: string;
-  confirm_password: string;
+import { useAuth } from "@/hooks/useAuth"
+import { useNavigate } from "react-router-dom"
+import type { LoginData, RegisterData } from "@/@types/auth"
+interface AuthModalProps {
+  isOpen: boolean
+  setIsOpen: (value: boolean) => void
 }
 
 type RegisterFormData = z.infer<typeof registerFormSchema>
 type LoginFormData = z.infer<typeof loginFormSchema>
 
 
-export function AuthModal() {
+export function AuthModal({ isOpen, setIsOpen }: AuthModalProps) {
   const [authMode, setAuthMode] = useState<"login" | "register">("login")
   const [showPassword, setShowPassword] = useState(false)
-   const { isOpen, setIsOpen } = useAuthModal()
-   
+  const navigate = useNavigate()
+  const { signIn, signUp } = useAuth()
+
   const form = useForm<RegisterFormData | LoginFormData>({
     resolver: zodResolver(
       authMode === "register" ? registerFormSchema : loginFormSchema
@@ -43,24 +40,27 @@ export function AuthModal() {
     formState: { errors, isSubmitting }
   } = form;
 
-  useState(() => {
-    if (isOpen) {
-      setAuthMode("login")
-    }
-  })
-
   const handleAuth = async (data: LoginData | RegisterData) => {
-    reset()
+    let hasSuccesfullAuth;
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    toast(
-        authMode === "login"
-          ? "You have been successfully logged in."
-          : "Your account has been created successfully. Welcome to Avenant!")
-    reset()
+    if (authMode === 'login') {
+      hasSuccesfullAuth = await signIn(data)
+    } else if (authMode === 'register') {
+      hasSuccesfullAuth = await signUp(data as RegisterData)
+    }
 
-    setIsOpen(false)
+      
+    if (hasSuccesfullAuth) {
+      reset()
+
+      toast.success(
+          authMode === "login"
+            ? "You have been successfully logged in."
+            : "Your account has been created successfully. Welcome to Avenant!")
+  
+      setIsOpen(false)
+      navigate('/rooms')
+    }
   }
 
   const switchAuthMode = () => {
@@ -70,7 +70,7 @@ export function AuthModal() {
   }
 
   return (
-    <Dialog open={isOpen}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
           <DialogTitle>{authMode === "login" ? "Welcome Back" : "Create Account"}</DialogTitle>
@@ -90,7 +90,7 @@ export function AuthModal() {
                 type="text"
                 placeholder="Enter your full name"
                 disabled={isSubmitting}
-                error={errors.name?.message}
+                error={(errors as FieldErrors<RegisterData>).name?.message}
                 {...register("name")}
               />
             </div>
@@ -138,7 +138,7 @@ export function AuthModal() {
                   type={"password"}
                   placeholder="Confirm your password"
                   disabled={isSubmitting}
-                  error={errors.confirm_password?.message}
+                  error={(errors as FieldErrors<RegisterData>).confirm_password?.message}
                   {...register("confirm_password")}
                 />
             </div>

@@ -9,6 +9,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { UserRepository } from '../user/repositories/user.repository';
 import { ChatRoomService } from '../chat-room/chat-room.service';
 import { ChatRoomRepository } from '../chat-room/repositories/chat-room.repository';
+import { LocalStrategy } from './strategies/local.strategy';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ChatRoomRepository } from '../chat-room/repositories/chat-room.reposito
     PrismaService,
     AuthService,
     JwtStrategy,
+    LocalStrategy,
     UserService,
     UserRepository,
     ChatRoomService,
