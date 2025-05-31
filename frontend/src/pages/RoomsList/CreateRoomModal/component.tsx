@@ -50,8 +50,9 @@ export function CreateRoomModal({ categories }: CreateRoomModalProps) {
 
   const handleCreateRoom = async (data: CreateRoomData) => {
     const mockRoomId = 1
+    console.log(data);
     // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise((resolve) => {setTimeout(resolve, 1000)})
     setIsModalOpen(false)
 
     navigate(`/chat/${mockRoomId}`)
