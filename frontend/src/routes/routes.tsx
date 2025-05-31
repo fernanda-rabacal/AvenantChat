@@ -1,7 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom';
-import RoomsListPage from '../pages/RoomsList/page';
-import ChatRoom from '@/pages/Chat/page';
-import HomePage from '@/pages/Home/page';
+import ChatRoomsListPage from '@/pages/RoomsList/rooms-list-page';
+import ChatRoom from '@/pages/Chat/chat';
+import HomePage from '@/pages/Home/home';
 
 export const router = createBrowserRouter([
   {
@@ -10,10 +10,10 @@ export const router = createBrowserRouter([
   },
   {
     path: '/rooms',
-    element: <RoomsListPage />,
+    element: <ChatRoomsListPage />,
   },
   {
-    path: '/rooms/:roomId',
+    path: '/rooms/chat',
     element: <ChatRoom />,
   },
 ]);

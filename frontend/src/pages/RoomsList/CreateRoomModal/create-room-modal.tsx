@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom";
 import z  from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,37 +25,34 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createRoomSchema } from "@/utils/validationSchemas";
-interface CreateRoomData {
-  name: string;
-  category: string;
-  description?: string;
-}
-interface CreateRoomModalProps {
-  categories: string[]
-}
+import { useChat } from "@/hooks/useChat";
+import type { CreateRoomData } from "@/@types/interfaces";
 
 type CreateRoomFormData = z.infer<typeof createRoomSchema>
-export function CreateRoomModal({ categories }: CreateRoomModalProps) {
+export function CreateRoomModal() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const navigate = useNavigate()
+  const { createChatRoom } = useChat()
   const { 
     register,
     handleSubmit,
     clearErrors,
     reset,
+    control,
     formState: { errors, isSubmitting }
   } = useForm<CreateRoomFormData>({
-    resolver: zodResolver(createRoomSchema)
+    resolver: zodResolver(createRoomSchema),
+    defaultValues: {
+      category: "",
+    },
   })
 
-  const handleCreateRoom = async (data: CreateRoomData) => {
-    const mockRoomId = 1
-    console.log(data);
-    // Simulate API call
-    await new Promise((resolve) => {setTimeout(resolve, 1000)})
-    setIsModalOpen(false)
+  const categories = ["Tech", "Gaming", "Books"]
 
-    navigate(`/chat/${mockRoomId}`)
+  const handleCreateRoom = async (data: CreateRoomData) => {
+    createChatRoom(data)
+    setIsModalOpen(false)
+    navigate(`/rooms/chat`)
   }
 
   const handleCancelCreateRoom = () => {
@@ -94,22 +91,26 @@ export function CreateRoomModal({ categories }: CreateRoomModalProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="category">Category *</Label>
-              <Select>
-                <SelectTrigger  
-                  id="category" 
-                  className="w-full"
-                  error={errors.category?.message}
-                  {...register("category")} >
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Controller
+                control={control}
+                name="category"
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange}
+                    value={field.value}
+                    defaultValue={field.value}>
+                    <SelectTrigger className="w-full" error={errors.category?.message}>
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
             </div>
 
             {/* Description */}

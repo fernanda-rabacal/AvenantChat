@@ -4,7 +4,7 @@ import { ChatRoomController } from './chat-room.controller';
 import { ChatRoomRepository } from './repositories/chat-room.repository';
 import { JwtStrategy } from '../auth/strategies/jwt.strategy';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
 import { UserRepository } from '../user/repositories/user.repository';
 
@@ -17,7 +17,8 @@ import { UserRepository } from '../user/repositories/user.repository';
     UserService, 
     UserRepository, 
     PrismaService, 
-    JwtStrategy
+    JwtStrategy,
+    JwtService,
   ],
   exports: [
     ChatRoomService

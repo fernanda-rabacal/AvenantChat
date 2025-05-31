@@ -1,15 +1,19 @@
-export const formatTimestamp = (date: Date) => {
-  const now = new Date()
-  const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60)
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import 'dayjs/locale/en';
 
-  if (diffInHours < 24 && date.getDate() === now.getDate()) {
-    return `Today at ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
-  } else if (diffInHours < 48 && date.getDate() === now.getDate() - 1) {
-    return `Yesterday at ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+dayjs.extend(relativeTime);
+dayjs.locale('en');
+
+export const formatTimestamp = (date_value: Date | string) => {
+  const now = dayjs();
+  const date = dayjs(date_value);
+
+  const diffInHours = now.diff(date, 'hour');
+
+  if (diffInHours < 1) {
+    return date.fromNow();
   } else {
-    return (
-      date.toLocaleDateString([], { month: "short", day: "numeric" }) +
-      ` at ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
-    )
+    return date.format('MMM D [at] h:mm A'); // e.g., "May 31 at 2:45 PM"
   }
-}
+};

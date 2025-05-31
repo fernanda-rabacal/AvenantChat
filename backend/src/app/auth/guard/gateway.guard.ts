@@ -38,9 +38,14 @@ export class GatewayAdminGuard implements CanActivate {
         throw new UnauthorizedException('Not logged');
       }
 
+      socket.user = user;
+      socket.id_user = user.id_user;
+      socket.name = user.name;
+
       return true;
-    } catch {
-      throw new UnauthorizedException('Not logged');
+    } catch (err: unknown) {
+      this.logger.error('Token validation failed', err);
+      throw new UnauthorizedException('Token is invalid or expired');
     }
   }
 }

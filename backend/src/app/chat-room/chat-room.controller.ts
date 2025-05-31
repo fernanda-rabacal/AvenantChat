@@ -38,24 +38,4 @@ export class ChatRoomController {
   async leave(@Req() req: Request  & { user: AuthTokenDto }, @Body() id_chat_room: number) {
     return this.chatRoomService.leaveChatRoom({ id_chat_room, id_user: req.user.id_user });
   }
-
-/*   @Post('/join')
-  async join(@Body() joinPollDto: JoinPollDto) {
-    const result = await this.pollsService.joinPoll(joinPollDto);
-
-    return result;
-  }
-
-  @UseGuards(ControllerAuthGuard)
-  @Post('/rejoin')
-  async rejoin(@Req() request: RequestWithAuth) {
-    const { userID, pollID, name } = request;
-    const result = await this.pollsService.rejoinPoll({
-      name,
-      pollID,
-      userID,
-    });
-
-    return result;
-  } */
 }

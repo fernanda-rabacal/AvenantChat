@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { api } from "@/lib/axios";
+import { api, setAuthInterceptor } from "@/lib/axios";
 import { type ReactNode, createContext, useEffect, useState } from "react"
 import { setCookie, destroyCookie, parseCookies } from 'nookies'
 import type { LoginData, RegisterData } from "@/@types/auth";
@@ -11,7 +11,7 @@ interface AuthProps {
 }
 
 type User = {
-  id: number;
+  id_user: number;
   name: string;
   email: string;
   password: string;
@@ -58,8 +58,6 @@ export function AuthContextProvider({ children } : AuthProps) {
       const response = await api.post('/login', data)
       const { token } = response.data
       
-      setCookie(undefined, 'avenant_token', token)
-      
       await getUserByToken(token)
 
       return true
@@ -81,6 +79,10 @@ export function AuthContextProvider({ children } : AuthProps) {
       })
 
       const user = response.data
+      setCookie(undefined, `avenant_token_${user.id_user}`, token, {
+        maxAge: 60 * 60 * 24 * 7
+      })
+      setAuthInterceptor(user.id_user);
 
       setUser(user)
     } catch(err: unknown) {

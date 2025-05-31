@@ -57,6 +57,38 @@ export class UserRepository {
     return user;
   }
 
+  async getUserRooms(id_user: number) {
+    const userAsMember = await this.prisma.chatRoomMember.findMany({
+      where: {
+        id_user,
+      }
+    });
+
+    const chatRoomsIds = Array.from(new Set(userAsMember.map(member => member.id_chat_room)))
+    const rooms = await this.prisma.chatRoom.findMany({
+      where: {
+        id_chat_room: {
+          in: chatRoomsIds
+        }
+      }
+    })
+
+    return rooms;
+  }
+
+  async saveUserConnectState(id_user: number, connection_state: 'connected' | 'disconnected') {
+    const user = await this.prisma.user.update({
+      data: {
+        is_online: connection_state === 'connected' ? true : false
+      },
+      where: {
+        id_user,
+      },
+    });
+
+    return user;
+  }
+
   async update(id_user: number, updateUserDto: UpdateUserDto) {
     const data: {
       name?: string,

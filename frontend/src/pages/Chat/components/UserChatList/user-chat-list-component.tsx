@@ -3,18 +3,20 @@ import { ChevronLeft, ChevronRight, Settings } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { ChatRoom, User } from "@/@types/interfaces";
 import { cn } from "@/utils/utils";
+import { useChat } from "@/hooks/useChat";
+import { useAuth } from "@/hooks/useAuth";
 
 interface UserChatListProps {
-  user: User;
-  chatRooms: ChatRoom[];
   showChatList: boolean;
   isMobile: boolean;
   toggleUserChatList: () => void;
 }
 
-export function UserChatList({ user, chatRooms, showChatList, isMobile, toggleUserChatList }: UserChatListProps) {
+export function UserChatList({ showChatList, isMobile, toggleUserChatList }: UserChatListProps) {
+  const { userRooms, changeChatRoom } = useChat();
+  const { user } = useAuth();
+
   return (
     <>
        {isMobile && (
@@ -45,9 +47,9 @@ export function UserChatList({ user, chatRooms, showChatList, isMobile, toggleUs
           <h3 className="font-semibold text-sm text-muted-foreground">Chats</h3>
         </div>
         <ScrollArea className="flex-1 overflow-y-auto custom-scroll">
-          {chatRooms.map(chatRoom => {
+          {userRooms.map(chatRoom => {
             return (
-              <div key={chatRoom.id} className="w-full mx-2 border-b p-4 flex items-center cursor-pointer hover:">
+              <div  onClick={() => changeChatRoom(chatRoom)} key={chatRoom.id_chat_room} className="w-full mx-2 border-b p-4 flex items-center cursor-pointer">
                 <Avatar className="h-8 w-8 mt-0.5 mr-3 flex-shrink-0">
                   <AvatarImage src={chatRoom.avatar || "/placeholder.svg"} />
                   <AvatarFallback>{chatRoom.name.substring(0, 2)}</AvatarFallback>

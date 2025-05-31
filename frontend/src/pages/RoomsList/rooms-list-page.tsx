@@ -1,24 +1,25 @@
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Search, Users, MessageCircle } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { CreateRoomModal } from "./CreateRoomModal/component"
-import { mockChatRooms } from "@/data/mocks"
+import { CreateRoomModal } from "./CreateRoomModal/create-room-modal"
 import { Header } from "@/components/header"
 import { useNavigate } from "react-router-dom"
+import { useChat } from "@/hooks/useChat"
+import type { ChatRoom } from "@/@types/interfaces"
 
-export default function ChatRoomsPage() {
+export default function ChatRoomsListPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
-
   const navigate = useNavigate()
-  const categories = ["All", ...Array.from(new Set(mockChatRooms.map((room) => room.category)))]
+  const { rooms, joinChatRoom, getChatRooms } = useChat()
+  const categories = ["All", ...Array.from(new Set(rooms.map((room) => room.category)))]
 
-  const filteredRooms = mockChatRooms.filter((room) => {
+  const filteredRooms = rooms.filter((room) => {
     const matchesSearch =
       room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       room.description.toLowerCase().includes(searchTerm.toLowerCase())
@@ -26,8 +27,14 @@ export default function ChatRoomsPage() {
     return matchesSearch && matchesCategory
   })
 
-  const handleJoinRoom = (roomId: string | undefined) => {
-    navigate(`/rooms/${roomId}`)
+  useEffect(() => {
+    getChatRooms()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const handleJoinRoom = (room: ChatRoom) => {
+    joinChatRoom(room)
+    navigate(`/rooms/chat`)
   }
 
   return (
@@ -41,7 +48,7 @@ export default function ChatRoomsPage() {
             <p className="text-muted-foreground text-lg">Join conversations and connect with communities</p>
           </div>
 
-          <CreateRoomModal categories={categories} />
+          <CreateRoomModal />
         </div>
 
         <div className="mb-8 space-y-4">
@@ -70,7 +77,7 @@ export default function ChatRoomsPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredRooms.map((room) => (
-            <Card key={room.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Card key={room.id_chat_room} className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-3">
@@ -93,7 +100,7 @@ export default function ChatRoomsPage() {
                 <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
                   <div className="flex items-center space-x-1">
                     <Users className="h-4 w-4" />
-                    <span>{room.memberCount.toLocaleString()} members</span>
+                    <span>{room.membersCount?.toLocaleString()} members</span>
                   </div>
                   <div className="flex items-center space-x-1">
                     <MessageCircle className="h-4 w-4" />
@@ -102,7 +109,7 @@ export default function ChatRoomsPage() {
                 </div>
                 <Button
                   className="w-full"
-                  onClick={() => handleJoinRoom(room?.id)}
+                  onClick={() => handleJoinRoom(room)}
                   variant={"default"}
                 >
                   Join Room

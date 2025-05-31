@@ -1,31 +1,31 @@
 import { useState, useRef, useEffect } from "react"
 import { Send, Search, MessageCircle } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { cn } from "@/utils/utils"
-import { useMobile } from "@/hooks/useMobile" 
-import type { ChatRoom, Message } from "@/@types/interfaces"
-import { ChatMembersList } from "./components/ChatMembersList/component"
-import { UserChatList } from "./components/UserChatList/component"
-import { mockMessages, mockChatRooms, mockUsers } from "@/data/mocks"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { sendMessageSchema } from "@/utils/validationSchemas"
 import type { z } from "zod"
-import { formatTimestamp } from "@/utils/formatTimestamp"
+
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { ChatMembersList } from "./components/ChatMembersList/chat-members-list-component"
+import { UserChatList } from "./components/UserChatList/user-chat-list-component"
+
+import { sendMessageSchema } from "@/utils/validationSchemas"
 import { verifyShoudGroupMessage } from "@/utils/verifyShouldGroupMessage"
+import { useMobile } from "@/hooks/useMobile" 
+import { useChat } from "@/hooks/useChat"
+import type { ChatRoom } from "@/@types/interfaces"
+import { ChatMessageItem } from "./components/ChatMessage/chat-message"
 
 type SendMessageFormData = z.infer<typeof sendMessageSchema>
 
 export default function ChatRoom() {
-  const [messages, setMessages] = useState<Message[]>(mockMessages)
   const [showMembers, setShowMembers] = useState(true)
   const [showChatList, setShowChatList] = useState(true)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobile = useMobile()
+  const { messages, sendMessage } = useChat()
   const { 
       register,
       handleSubmit,
@@ -52,16 +52,8 @@ export default function ChatRoom() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
-  const handleSendMessage = (data: SendMessageFormData) => {
-    const newMessage = {
-      id: `msg-${Date.now()}`,
-      content: data.message,
-      timestamp: new Date(),
-      user: mockUsers[0],
-      chatId: 1
-    }
-
-    setMessages([...messages, newMessage])
+  const handleSendMessage = async (data: SendMessageFormData) => {
+    sendMessage(data.message)
     reset()
   }
 
@@ -82,8 +74,6 @@ export default function ChatRoom() {
   return (
     <main className="flex h-screen bg-background">
       <UserChatList 
-        user={mockUsers[0]}
-        chatRooms={mockChatRooms}
         showChatList={showChatList}
         isMobile={isMobile}
         toggleUserChatList={toggleUserChatList}
@@ -111,35 +101,19 @@ export default function ChatRoom() {
         <ScrollArea className="flex-1 p-4 h-[75%]">
           <div>
             {messages.map((message, index) => {
-              const { shouldGroup, isLastMessage } = verifyShoudGroupMessage(message, index, messages)
+              const { shouldGroup, isLastMessage } = verifyShoudGroupMessage(message, index, messages);
 
               return (
-                <div
-                  key={message.id}
-                  className={cn("group flex", shouldGroup ? "mt-1 pt-0" : "pt-5", message.isNew && "animate-highlight")}
-                  ref={isLastMessage ? messagesEndRef : null}
-                >
-                  {!shouldGroup ? (
-                    <Avatar className="h-10 w-10 mt-0.5 mr-3 flex-shrink-0">
-                      <AvatarImage src={message.user.avatar || "/placeholder.svg"} />
-                      <AvatarFallback>{message.user.name.substring(0, 2)}</AvatarFallback>
-                    </Avatar>
-                  ) : (
-                    <div className="w-10 mr-3 flex-shrink-0"></div>
-                  )}
-
-                  <div className="flex-1 min-w-0">
-                    {!shouldGroup && (
-                      <div className="flex items-center">
-                        <span className="font-semibold mr-2">{message.user.name}</span>
-                        <span className="text-xs text-muted-foreground">{formatTimestamp(message.timestamp)}</span>
-                      </div>
-                    )}
-                    <div className="text-sm mt-0.5 break-words">{message.content}</div>
-                  </div>
-                </div>
-              )
+                <ChatMessageItem
+                  key={message.id_message}
+                  message={message}
+                  shouldGroup={shouldGroup}
+                  isLastMessage={isLastMessage}
+                  messagesEndRef={messagesEndRef}
+                />
+              );
             })}
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
 
@@ -185,7 +159,6 @@ export default function ChatRoom() {
       </section>
 
       <ChatMembersList 
-        members={mockUsers} 
         toggleMembersList={toggleMembersList} 
         isMobile={isMobile} 
         showMembers={showMembers} />

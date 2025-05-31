@@ -37,6 +37,11 @@ export class UserController {
   async findById(@Param('id_user') id_user_user: string) {
     return await this.userService.findById(+id_user_user);
   }
+ 
+  @Get('/chats/:id_user')
+  findUserChats(@Param('id_user') id_user: number) {
+    return this.userService.getUserRooms(+id_user);
+  }
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {

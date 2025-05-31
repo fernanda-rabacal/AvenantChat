@@ -23,8 +23,12 @@ export class ChatRoomService {
     return this.repository.findById(id_chat_room)
   }
 
-  async getUsersInRoom(id_chat_room: number) {
-    return this.repository.getUsersInRoom(id_chat_room)
+  async getChatRoomMembers(id_chat_room: number) {
+    return this.repository.getChatRoomMembers(id_chat_room)
+  }
+
+  async getChatRoomMessages(id_chat_room: number) {
+    return this.repository.getChatRoomMessages(id_chat_room)
   }
 
   async getUserRooms(id_user: number) {

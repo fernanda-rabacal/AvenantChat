@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service'; 
 import { CreateChatRoomDto } from '../dto/create-chat-room.dto';
-import { ChatProps, MessageProps, SendMessageProps } from 'src/@types/chat-rooms';
+import { ChatProps, SendMessageProps } from 'src/@types/chat-rooms';
 import { ConflictError } from 'src/common/errors/types/ConflictError';
 import { encryptData } from 'src/util/crypt';
-import { ChatRoomMember, Prisma, User } from '@prisma/client';
+import { ChatRoomMember, User } from '@prisma/client';
 
 @Injectable()
 export class ChatRoomRepository {
@@ -33,24 +33,49 @@ export class ChatRoomRepository {
       },
     });
 
-    await this.prisma.chatRoomMember.create({
+    const newRoom = await this.prisma.chatRoomMember.create({
       data: {
         id_chat_room: chatRoom.id_chat_room,
         id_user: systemUser.id_user,
       },
     });
 
-    return chatRoom;
+    return {
+      rooms: this.prisma.chatRoom.findMany(),
+      created_room: newRoom
+    };
   }
 
   async findAll() {
-    const chatRooms = await this.prisma.chatRoom.findMany();
+    let chatRooms = await this.prisma.chatRoom.findMany();
+    chatRooms = await Promise.all(chatRooms.map(async chatRoom => {
+      const membersCount = await this.prisma.chatRoomMember.count({
+        where: {
+          id_chat_room: chatRoom.id_chat_room
+        }
+      })
+
+      const lastSentMessage = await this.prisma.chatMessages.findFirst({
+        where: {
+          id_chat_room: chatRoom.id_chat_room
+        },
+        orderBy: {
+          sent_at: 'desc', 
+        },
+      })
+  
+      return {
+        ...chatRoom,
+        membersCount,
+        lastActivity: lastSentMessage.sent_at
+      }
+    }))
 
     return chatRooms;
   }
 
   async findById(id_chat_room: number) {
-    const chatRoom = await this.prisma.chatRoom.findUnique({
+    const chatRoom = await this.prisma.chatRoom.findFirst({
       where: {
         id_chat_room,
       },
@@ -63,7 +88,39 @@ export class ChatRoomRepository {
       }
     });
 
-    return chatRoom;
+    const members = await this.prisma.chatRoomMember.findMany({
+      where: {
+        id_chat_room: chatRoom.id_chat_room,
+        NOT: {
+          user: {
+            name: this.systemName,
+          }
+        },
+      }, 
+      include: {
+        user: true
+      }
+    })
+
+    const lastSentMessage = await this.prisma.chatMessages.findFirst({
+      where: {
+        id_chat_room: chatRoom.id_chat_room
+      },
+      orderBy: {
+        sent_at: 'desc', 
+      },
+    })
+
+    const chatRoomUpdated = {
+      ...chatRoom,
+      membersCount: members.length,
+      lastActivity: lastSentMessage?.sent_at
+    }
+
+    return {
+      chat_room: chatRoomUpdated,
+      members
+    }
   }
 
   async getSystemChatMember(id_chat_room: number) {
@@ -84,7 +141,7 @@ export class ChatRoomRepository {
     });
   }
 
-  async getUsersInRoom(id_chat_room: number) {
+  async getChatRoomMembers(id_chat_room: number) {
     const chatRoomMembers = await this.prisma.chatRoomMember.findMany({
       where: {
         id_chat_room,
@@ -92,6 +149,28 @@ export class ChatRoomRepository {
     });
 
     return chatRoomMembers;
+  }
+
+  async getChatRoomMessages(id_chat_room: number) {
+    const chatRoomMessages = await this.prisma.chatMessages.findMany({
+      where: {
+        id_chat_room,
+      },
+      include: {
+        chat_room_member: {
+          include: {
+            user: true,
+          },
+        },
+      }
+    });
+
+    const formattedMessages = chatRoomMessages.map((msg) => ({
+      ...msg,
+      user: msg.chat_room_member.user,
+    }));
+
+    return formattedMessages;
   }
 
   async getUserRooms(id_user: number) {
@@ -128,15 +207,12 @@ export class ChatRoomRepository {
     const newMessage = await this.prisma.chatMessages.create({
       data: {
         content: message_infos.content,
-        chat_room_member: {
-          connect: { 
-            id_chat_room_member: chatMember.id_chat_room_member
-          },
-        },
+        id_chat_room: message_infos.id_chat_room,
+        id_chat_room_member: chatMember.id_chat_room_member
       }
     });
 
-    return { ...newMessage, name: chatMember.user.name };
+    return { ...newMessage, user: chatMember.user };
   }
 
   async join({ id_chat_room, id_user } : ChatProps) {

@@ -1,16 +1,28 @@
+export interface CreateRoomData {
+  name: string;
+  category: string;
+  description?: string;
+}
+
 export interface Message {
-  id: string
+  id_message: string
   content: string
-  timestamp: Date
+  sent_at: Date
   user: User
   isNew?: boolean
 }
 
 export interface User {
-  id: string
+  id_user: string
   name: string
-  avatar?: string
-  status: "online" | "offline"
+  avatar_url?: string
+  is_online: boolean
+}
+
+export interface ChatRoomMember {
+  id_chat_room_member: number
+  id_chat_room: number
+  user?: User
 }
 
 export interface Channel {
@@ -21,10 +33,10 @@ export interface Channel {
 }
 
 export interface ChatRoom {
-  id?: string
+  id_chat_room?: string
   name: string
   description: string
-  memberCount: number
+  membersCount?: number
   isOnline: boolean
   lastActivity: string
   category: string

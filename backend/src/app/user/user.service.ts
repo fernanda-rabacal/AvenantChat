@@ -42,6 +42,14 @@ export class UserService {
     return user;
   }
 
+  async getUserRooms(id_user: number) {
+    return this.repository.getUserRooms(id_user);
+  }
+
+  async saveUserConnectState(id_user: number, connection_state: 'connected' | 'disconnected') {
+    return this.repository.saveUserConnectState(id_user, connection_state)
+  }
+
   async update(userId: number, updateUserDto: UpdateUserDto) {
     return this.repository.update(userId, updateUserDto);
   }
