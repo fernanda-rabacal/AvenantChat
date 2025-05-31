@@ -2,14 +2,11 @@ import { INestApplicationContext, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { IoAdapter } from '@nestjs/platform-socket.io';
-import { createAdapter } from '@socket.io/redis-adapter';
-import { ServerOptions, Server } from 'socket.io';
-import { createClient } from 'redis';
-import { SocketWithAuth } from '../@types/socket-with-auth'; 
+import { Server, ServerOptions } from 'socket.io';
+import { SocketWithAuth } from 'src/@types/socket-with-auth';
 
-export class RedisIOAdapter extends IoAdapter {
-  private readonly logger = new Logger(RedisIOAdapter.name);
-
+export class SocketIOAdapter extends IoAdapter {
+  private readonly logger = new Logger(SocketIOAdapter.name);
   constructor(
     private app: INestApplicationContext,
     private configService: ConfigService,
@@ -17,17 +14,19 @@ export class RedisIOAdapter extends IoAdapter {
     super(app);
   }
 
-  async createIOServer(port: number, options?: ServerOptions): Promise<Server> {
-    const clientPort = parseInt(this.configService.get('CLIENT_PORT'), 10);
+  createIOServer(port: number, options?: ServerOptions) {
+    const clientPort = parseInt(this.configService.get('CLIENT_PORT'));
 
     const cors = {
       origin: [
         `http://localhost:${clientPort}`,
-        new RegExp(`^http:\\/\\/192\\.168\\.1\\.\\d+:${clientPort}$`),
+        new RegExp(`/^http:\/\/192\.168\.1\.([1-9]|[1-9]\d):${clientPort}$/`),
       ],
     };
 
-    this.logger.log('Configuring Socket.IO server with CORS and Redis adapter.');
+    this.logger.log('Configuring SocketIO server with custom CORS options', {
+      cors,
+    });
 
     const optionsWithCORS: ServerOptions = {
       ...options,
@@ -37,18 +36,7 @@ export class RedisIOAdapter extends IoAdapter {
     const jwtService = this.app.get(JwtService);
     const server: Server = super.createIOServer(port, optionsWithCORS);
 
-    server.of('chat_rooms').use(createTokenMiddleware(jwtService, this.logger));
-
-    const redisHost = this.configService.get('REDIS_HOST') || 'localhost';
-    const redisPort = parseInt(this.configService.get('REDIS_PORT'), 10) || 6379;
-
-    const pubClient = createClient({ socket: { host: redisHost, port: redisPort } });
-    const subClient = pubClient.duplicate();
-
-    await pubClient.connect();
-    await subClient.connect();
-
-    server.adapter(createAdapter(pubClient, subClient));
+    server.of('chat-rooms').use(createTokenMiddleware(jwtService, this.logger));
 
     return server;
   }

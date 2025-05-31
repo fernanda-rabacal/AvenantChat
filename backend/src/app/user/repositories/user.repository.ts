@@ -3,7 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { encryptData } from '../../../util/crypt';
 import { UpdateUserDto } from '../dto/update-user.dto';
-import { Prisma } from 'generated/prisma';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UserRepository {
@@ -58,7 +58,10 @@ export class UserRepository {
   }
 
   async update(id_user: number, updateUserDto: UpdateUserDto) {
-    const data: Prisma.UserUpdateInput = {};
+    const data: {
+      name?: string,
+      password?: string
+    } = {};
 
     if (updateUserDto.name) data.name = updateUserDto.name;
     if (updateUserDto.password) data.password = await encryptData(updateUserDto.password);
