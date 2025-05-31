@@ -1,5 +1,5 @@
 import { MessageCircle } from "lucide-react";
-import { Button } from "../ui/button";
+import { Button } from "./ui/button";
 import { NavLink } from "react-router-dom";
 
 export function Header() {

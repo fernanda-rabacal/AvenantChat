@@ -8,7 +8,7 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { CreateRoomModal } from "./CreateRoomModal/component"
 import { mockChatRooms } from "@/data/mocks"
-import { Header } from "@/components/Header/component"
+import { Header } from "@/components/header"
 import { useNavigate } from "react-router-dom"
 
 export default function ChatRoomsPage() {
@@ -27,9 +27,7 @@ export default function ChatRoomsPage() {
   })
 
   const handleJoinRoom = (roomId: string | undefined) => {
-    console.log(`Joining room ${roomId}`)
-
-    navigate(`/chat/${roomId}`)
+    navigate(`/rooms/${roomId}`)
   }
 
   return (
