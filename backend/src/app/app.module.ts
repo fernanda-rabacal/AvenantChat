@@ -6,6 +6,7 @@ import { ChatRoomModule } from './chat-room/chat-room.module';
 import { ConfigModule } from '@nestjs/config';
 import { ChatRoomGateway } from './chat-room/chat-room.gateway';
 import { RedisModule } from './redis.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -13,7 +14,8 @@ import { RedisModule } from './redis.module';
     }),
     UserModule, 
     ChatRoomModule,
-    RedisModule],
+    RedisModule,
+    AuthModule],
   controllers: [AppController],
   providers: [AppService, ChatRoomGateway],
 })

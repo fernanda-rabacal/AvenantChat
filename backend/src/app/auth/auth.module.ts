@@ -7,6 +7,8 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UserRepository } from '../user/repositories/user.repository';
+import { ChatRoomService } from '../chat-room/chat-room.service';
+import { ChatRoomRepository } from '../chat-room/repositories/chat-room.repository';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { UserRepository } from '../user/repositories/user.repository';
     JwtStrategy,
     UserService,
     UserRepository,
+    ChatRoomService,
+    ChatRoomRepository
   ],
   exports: [JwtModule],
 })
