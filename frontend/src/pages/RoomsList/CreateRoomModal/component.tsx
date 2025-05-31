@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { createRoomSchema } from "@/lib/validationSchemas";
+import { createRoomSchema } from "@/utils/validationSchemas";
 interface CreateRoomData {
   name: string;
   category: string;
@@ -50,8 +50,9 @@ export function CreateRoomModal({ categories }: CreateRoomModalProps) {
 
   const handleCreateRoom = async (data: CreateRoomData) => {
     const mockRoomId = 1
+    console.log(data);
     // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise((resolve) => {setTimeout(resolve, 1000)})
     setIsModalOpen(false)
 
     navigate(`/chat/${mockRoomId}`)
