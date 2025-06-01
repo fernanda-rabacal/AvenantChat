@@ -50,7 +50,7 @@ export function ChatMembersList({ showMembers, isMobile, toggleMembersList }: IC
                 <div
                   key={member.id_chat_room_member}
                   className="flex items-center px-2 py-2 rounded-md hover:bg-accent/50 cursor-pointer"
-                >
+                  >
                   <div className="relative mr-2">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={member.user?.avatar_url || "/placeholder.svg"} />

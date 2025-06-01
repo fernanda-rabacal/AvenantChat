@@ -75,11 +75,8 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
     }
   }, [user?.id_user]);
 
-
   const joinChatRoom = useCallback((room: IChatRoom) => {
     socketInstance?.emit("join_chat", { id_chat_room: room.id_chat_room });
-
-    setActiveRoom(room)
   }, [socketInstance]);
 
   const enterChatRoom = useCallback((room: IChatRoom) => {
@@ -109,16 +106,14 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
       try {
         const response = await api.post("/chat-room", { ...data, created_by: user?.id_user });
         const createdRoom = response.data.created_room;
-        
+
         toast.success("Chat room created successfully!");
-        
         setRooms(response.data.rooms);
-        joinChatRoom(createdRoom); 
-        setActiveRoom(createdRoom);
+        joinChatRoom(createdRoom);
       } catch (err: unknown) {
         manageError(err, 'createChatRoom', 'creating chat room');
       }
-    }, [joinChatRoom, user]);
+  }, [user, setActiveRoom, setRooms, joinChatRoom]);
 
   const getChatRooms = useCallback(async () => {
     try {
@@ -160,9 +155,14 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
     socketInstance.off("chat_room_members_list");
     socketInstance.off("message");
     socketInstance.off("saved_messages");
+    socketInstance.off("joined_room");
 
     socketInstance.on("connect", () => {
       console.log("🔌 Connected to socket:", socketInstance.id);
+    });
+
+    socketInstance.on("joined_room", (room: IChatRoom) => {
+      setActiveRoom(room); 
     });
 
     socketInstance.on("user_rooms_list", (data) => {
@@ -177,8 +177,8 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
       setMessages((prev) => [...prev, msg]);
     });
 
-    socketInstance.on("saved_messages", (messages: IChatMessage[]) => {
-      setMessages(messages);
+    socketInstance.on("saved_messages", (data) => {
+      setMessages(data.messages);
     });
 
     return () => {
@@ -187,6 +187,7 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
       socketInstance.off("chat_room_members_list");
       socketInstance.off("message");
       socketInstance.off("saved_messages");
+      socketInstance.off("joined_room");
     };
   }, [socketInstance, user]);
 
@@ -209,6 +210,7 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
         JSON.stringify(activeRoomStorage)
       );
     } 
+
     const savedActiveRoom = localStorage.getItem(storageKey);
 
     if (savedActiveRoom) {

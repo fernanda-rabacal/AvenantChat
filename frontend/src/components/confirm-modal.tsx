@@ -1,7 +1,6 @@
-import { useState } from "react"
-import { LogOut } from "lucide-react"
-import { useNavigate } from "react-router-dom"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,34 +8,33 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { toast } from "sonner"
-import { useAuth } from "@/hooks/useAuth"
+} from "@/components/ui/dialog";
 
-interface ILogoutModalProps {
-  isOpen: boolean
-  setIsOpen: (value: boolean) => void
+interface IConfirmModalProps {
+  isOpen: boolean;
+  setIsOpen: (value: boolean) => void;
+  title: string;
+  description: string;
+  buttonLoadingTitle: string;
+  buttonConfirmTitle: string;
+  onConfirm: () => void;
 }
 
-export function ConfirmLogoutModal({ isOpen, setIsOpen }: ILogoutModalProps) {
+export function ConfirmModal({ 
+  isOpen, 
+  setIsOpen, 
+  title, 
+  description, 
+  buttonLoadingTitle, 
+  buttonConfirmTitle,
+  onConfirm
+}: IConfirmModalProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const { signOut } = useAuth();
-  const navigate = useNavigate();
 
   const handleConfirm = async () => {
-    setIsLoading(true)
-
-    try {
-      signOut()
-      toast.success('Logged out successfully')
-      setIsOpen(false)
-      navigate("/")
-    } catch (err: unknown) {
-      console.error("signOut - confirmLogout err>> ", err)
-      toast.error('There was an error logging out. Please try again.')
-    } finally {
-      setIsLoading(false)
-    }
+    setIsLoading(true);
+    onConfirm();
+    setIsLoading(false);
   };
 
   return (
@@ -45,10 +43,10 @@ export function ConfirmLogoutModal({ isOpen, setIsOpen }: ILogoutModalProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <LogOut className="h-5 w-5 text-muted-foreground" />
-            Confirm Logout
+            {title}
           </DialogTitle>
           <DialogDescription>
-            Are you sure you want to log out? You will need to log in again to access your account.
+            {description}
           </DialogDescription>
         </DialogHeader>
 
@@ -63,12 +61,12 @@ export function ConfirmLogoutModal({ isOpen, setIsOpen }: ILogoutModalProps) {
             {isLoading ? (
               <>
                 <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                Logging out...
+                {buttonLoadingTitle}
               </>
             ) : (
               <>
                 <LogOut size={16} />
-                Logout
+                {buttonConfirmTitle}
               </>
             )}
           </Button>
