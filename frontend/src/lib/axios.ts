@@ -5,9 +5,18 @@ export const api = axios.create({
   baseURL: "http://localhost:8080",
 })
 
-api.interceptors.request.use((config) => {
-  const { 'avenant_token': token } = parseCookies()
+export const setAuthInterceptor = (userId: string | number) => {
+  api.interceptors.request.use((config) => {
+    const cookieName = `avenant_token_${userId}`;
+    const cookies = parseCookies();
+    const token = cookies[cookieName];
 
-  config.headers.Authorization =  token ? `Bearer ${token}` : '';
-  return config;
-});
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    } else {
+      delete config.headers.Authorization;
+    }
+
+    return config;
+  });
+};

@@ -34,19 +34,28 @@ export class UserController {
   }
 
   @Get('/:id_user')
-  async findById(@Param('id_user') id_user_user: string) {
-    return await this.userService.findById(+id_user_user);
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async findById(@Param('id_user') id_user: string) {
+    return await this.userService.findById(+id_user);
+  }
+ 
+  @Get('/chats/:id_user')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  findUserChats(@Param('id_user') id_user: number) {
+    return this.userService.getUserRooms(+id_user);
   }
 
   @Post()
-  async create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  async create(@Body() create_user_dto: CreateUserDto) {
+    return this.userService.create(create_user_dto);
   }
 
   @Patch('/:id_user')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  async update(@Param('id_user') id_user: string, @Body() updateUserDto: UpdateUserDto) {
-    return await this.userService.update(+id_user, updateUserDto);
+  async update(@Param('id_user') id_user: string, @Body() update_user_dto: UpdateUserDto) {
+    return await this.userService.update(+id_user, update_user_dto);
   }
 }

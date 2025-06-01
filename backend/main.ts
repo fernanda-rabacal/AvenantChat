@@ -10,7 +10,9 @@ import { ConfigService } from '@nestjs/config';
 import { SocketIOAdapter } from 'src/adapters/socket-io.adapter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: ['log', 'error', 'warn', 'debug', 'verbose'],
+  });
   const config = new DocumentBuilder()
     .setTitle('Simple blog')
     .setDescription('Simple blog API description')
@@ -26,7 +28,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      forbidNonWhitelisted: true,
+      forbidNonWhitelisted: false,
       transform: true,
     }),
   );
@@ -41,6 +43,9 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       `http://localhost:${clientPort}`,
+      `http://localhost:${clientPort + 1}`,
+      `http://localhost:${clientPort + 2}`,
+      `http://localhost:${clientPort + 3}`,
       new RegExp(`/^http:\/\/192\.168\.1\.([1-9]|[1-9]\d):${clientPort}$/`),
     ],
   });

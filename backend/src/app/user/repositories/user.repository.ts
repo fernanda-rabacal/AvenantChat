@@ -3,18 +3,17 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { encryptData } from '../../../util/crypt';
 import { UpdateUserDto } from '../dto/update-user.dto';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UserRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createUserDto: CreateUserDto) {
+  async create(create_user_dto: CreateUserDto) {
     const user = this.prisma.user.create({
       data: {
-        name: createUserDto.name,
-        email: createUserDto.email,
-        password: await encryptData(createUserDto.password),
+        name: create_user_dto.name,
+        email: create_user_dto.email,
+        password: await encryptData(create_user_dto.password),
       },
     });
 
@@ -24,14 +23,12 @@ export class UserRepository {
   async findAll() {
     const users = await this.prisma.user.findMany();
 
-    const removePassword = users.map(user => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const usersWithoutPassword = users.map(user => {
       const { password, ...rest } = user;
-
       return rest;
     });
 
-    return removePassword;
+    return usersWithoutPassword;
   }
 
   async findById(id_user: number) {
@@ -41,7 +38,6 @@ export class UserRepository {
       },
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...rest } = user;
 
     return rest;
@@ -57,14 +53,46 @@ export class UserRepository {
     return user;
   }
 
-  async update(id_user: number, updateUserDto: UpdateUserDto) {
+  async getUserRooms(id_user: number) {
+    const userAsMember = await this.prisma.chatRoomMember.findMany({
+      where: {
+        id_user,
+      }
+    });
+
+    const chatRoomsIds = Array.from(new Set(userAsMember.map(member => member.id_chat_room)))
+    const rooms = await this.prisma.chatRoom.findMany({
+      where: {
+        id_chat_room: {
+          in: chatRoomsIds
+        }
+      }
+    })
+
+    return rooms;
+  }
+
+  async saveUserConnectState(id_user: number, connection_state: 'connected' | 'disconnected') {
+    const user = await this.prisma.user.update({
+      data: {
+        is_online: connection_state === 'connected' ? true : false
+      },
+      where: {
+        id_user,
+      },
+    });
+
+    return user;
+  }
+
+  async update(id_user: number, update_user_dto: UpdateUserDto) {
     const data: {
       name?: string,
       password?: string
     } = {};
 
-    if (updateUserDto.name) data.name = updateUserDto.name;
-    if (updateUserDto.password) data.password = await encryptData(updateUserDto.password);
+    if (update_user_dto.name) data.name = update_user_dto.name;
+    if (update_user_dto.password) data.password = await encryptData(update_user_dto.password);
 
     const user = await this.prisma.user.update({
       data,

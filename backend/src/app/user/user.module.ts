@@ -10,5 +10,6 @@ import { UserRepository } from './repositories/user.repository';
   imports: [JwtModule],
   controllers: [UserController],
   providers: [UserService, PrismaService, JwtStrategy, UserRepository],
+  exports: [UserService]
 })
 export class UserModule {}
