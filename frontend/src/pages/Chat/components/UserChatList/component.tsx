@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { ChatRoom, User } from "@/@types/interfaces";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/utils";
 
 interface UserChatListProps {
   user: User;
