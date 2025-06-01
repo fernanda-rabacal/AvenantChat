@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { Server, ServerOptions } from 'socket.io';
 import { SocketWithAuth } from 'src/@types/socket-with-auth';
+import { UnauthorizedError } from 'src/common/errors/types/UnauthorizedError';
 
 export class SocketIOAdapter extends IoAdapter {
   private readonly logger = new Logger(SocketIOAdapter.name);
@@ -20,6 +21,9 @@ export class SocketIOAdapter extends IoAdapter {
     const cors = {
       origin: [
         `http://localhost:${clientPort}`,
+        `http://localhost:${clientPort + 1}`,
+        `http://localhost:${clientPort + 2}`,
+        `http://localhost:${clientPort + 3}`,
         new RegExp(`/^http:\/\/192\.168\.1\.([1-9]|[1-9]\d):${clientPort}$/`),
       ],
     };
@@ -45,18 +49,19 @@ export class SocketIOAdapter extends IoAdapter {
 const createTokenMiddleware =
   (jwtService: JwtService, logger: Logger) =>
   (socket: SocketWithAuth, next) => {
-    const token =
-      socket.handshake.auth.token || socket.handshake.headers['token'];
+    const token = socket.handshake.auth.token || socket.handshake.headers['token'];
 
     logger.debug(`Validating auth token before connection: ${token}`);
 
     try {
       const payload = jwtService.verify(token);
+
       socket.id_user = payload.id_user;
       socket.id_chat_room = payload.id_chat_room;
       next();
     } catch (err) {
       logger.warn('Invalid JWT Token');
-      next(new Error('FORBIDDEN'));
+
+      next(new UnauthorizedError('FORBIDDEN'));
     }
   };

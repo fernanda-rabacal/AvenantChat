@@ -15,11 +15,8 @@ export class GatewayAdminGuard implements CanActivate {
     private readonly jwtService: JwtService,
   ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // regular `Socket` from socket.io is probably sufficient
     const socket: SocketWithAuth = context.switchToWs().getClient();
-
-    const token =
-      socket.handshake.auth.token || socket.handshake.headers['token'];
+    const token = socket.handshake.auth.token || socket.handshake.headers['token'];
 
     if (!token) {
       this.logger.error('No authorization token provided');
@@ -28,9 +25,7 @@ export class GatewayAdminGuard implements CanActivate {
     }
 
     try {
-      const user = this.jwtService.verify<AuthPayload>(
-        token,
-      );
+      const user = this.jwtService.verify<AuthPayload>(token);
 
       this.logger.debug(`Validating admin using token payload`, user);
 
@@ -45,6 +40,7 @@ export class GatewayAdminGuard implements CanActivate {
       return true;
     } catch (err: unknown) {
       this.logger.error('Token validation failed', err);
+
       throw new UnauthorizedException('Token is invalid or expired');
     }
   }

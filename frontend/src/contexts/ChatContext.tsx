@@ -89,7 +89,7 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
   }, [socketInstance]);
 
   const leaveChatRoom = useCallback((id_chat_room: number) => {
-    socketInstance?.emit("leave_chat", { id_user: user?.id_user, id_chat_room });
+    socketInstance?.emit("leave_chat", { id_chat_room });
 
     setActiveRoom(null)
   }, [socketInstance, user?.id_user]);
