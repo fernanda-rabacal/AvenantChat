@@ -1,29 +1,36 @@
-import type { IChatRoom } from "@/@types/interfaces";
+import { useNavigate } from "react-router-dom";
+import { MessageCircle, Users } from "lucide-react";
+
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useChat } from "@/hooks/useChat";
 import { formatTimestamp } from "@/utils/formatTimestamp";
-import { MessageCircle, Users } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import type { IChatRoom } from "@/@types/interfaces";
 
-interface RoomCardItemProps {
+interface IRoomCardItemProps {
   room: IChatRoom
 }
 
-export function RoomCardItem({ room }: RoomCardItemProps) {
-  const { userRooms, joinChatRoom, enterChatRoom } = useChat()
-  const navigate = useNavigate()
-  const userAlreadyInRoom = userRooms.find(r => r.id_chat_room === room.id_chat_room)
+export function RoomCardItem({ room }: IRoomCardItemProps) {
+  const navigate = useNavigate();
+  const { userRooms, joinChatRoom, enterChatRoom } = useChat();
+  const userAlreadyInRoom = userRooms.find(r => r.id_chat_room === room.id_chat_room);
 
   const handleJoinRoom = (room: IChatRoom) => {
-    joinChatRoom(room)
-    navigate(`/rooms/chat`)
-  }
+    joinChatRoom(room);
+    navigate(`/rooms/chat`);
+  };
   
   const handleEnterRoom = (room: IChatRoom) => {
-    enterChatRoom(room)
-    navigate(`/rooms/chat`)
-  }
+    enterChatRoom(room);
+    navigate(`/rooms/chat`);
+  };
 
   return (
     <Card key={room.id_chat_room} className="hover:shadow-lg transition-shadow cursor-pointer">
@@ -44,13 +51,11 @@ export function RoomCardItem({ room }: RoomCardItemProps) {
         </div>
         {
           userAlreadyInRoom ? (
-            <Button className="w-full" onClick={() => handleEnterRoom(room)} variant ={"ghost"}
-            >
+            <Button className="w-full" onClick={() => handleEnterRoom(room)} variant ={"ghost"}>
               Enter Room
             </Button>
           ) : (
-            <Button className="w-full" onClick={() => handleJoinRoom(room)} variant ={"default"}
-            >
+            <Button className="w-full" onClick={() => handleJoinRoom(room)} variant ={"default"}>
               Join Room
             </Button>
           )

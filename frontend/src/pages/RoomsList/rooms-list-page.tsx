@@ -1,22 +1,23 @@
 
 import { useEffect, useState } from "react"
 import { Search, MessageCircle } from "lucide-react"
+
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { UserChatList } from "@/components/user-chat-list-component"
 import { CreateRoomModal } from "./components/create-room-modal"
 import { Header } from "@/components/header"
-import { useChat } from "@/hooks/useChat"
 import { RoomCardItem } from "./components/room-card"
+import { useChat } from "@/hooks/useChat"
 import { useMobile } from "@/hooks/useMobile"
-import { UserChatList } from "@/components/user-chat-list-component"
 
 export default function ChatRoomsListPage() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("All")
-  const [showChatList, setShowChatList] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [showChatList, setShowChatList] = useState(true);
+  const { rooms, getChatRooms } = useChat();
+  const isMobile = useMobile();
 
-  const { rooms, getChatRooms } = useChat()
-  const isMobile = useMobile()
   const categories = ["All", ...Array.from(new Set(rooms.map((room) => room.category)))]
 
   const filteredRooms = rooms.filter((room) => {
@@ -25,25 +26,25 @@ export default function ChatRoomsListPage() {
       room.description?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = selectedCategory === "All" || room.category === selectedCategory
     return matchesSearch && matchesCategory
-  })
+  });
 
   useEffect(() => {
     if (isMobile) {
-      setShowChatList(false)
+      setShowChatList(false);
     } else {
-      setShowChatList(true)
+      setShowChatList(true);
     }
-  }, [isMobile])
+  }, [isMobile]);
 
 
   const toggleUserChatList = () => {
-    setShowChatList(!showChatList)
-  }
+    setShowChatList(!showChatList);
+  };
 
   useEffect(() => {
-    getChatRooms()
+    getChatRooms();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, []);
 
   return (
     <main className="flex h-screen w-screen bg-background gap-12">
@@ -52,6 +53,7 @@ export default function ChatRoomsListPage() {
         isMobile={isMobile}
         toggleUserChatList={toggleUserChatList}
         />
+        
       <div className="flex-1 pr-12">
         <Header />
 

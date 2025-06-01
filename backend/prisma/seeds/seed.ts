@@ -12,7 +12,7 @@ main()
     await prisma.$disconnect();
   })
   .catch(async (e) => {
-    console.error(e);
+    console.error("prisma seed err >>", e);
     await prisma.$disconnect();
     process.exit(1);
   });

@@ -1,11 +1,11 @@
-export interface CreateRoomDataProps {
+export interface ICreateRoomDataProps {
   name: string;
   category: string;
   description?: string;
 }
 
 export interface IUser {
-  id_user: string
+  id_user: number
   name: string
   email: string;
   avatar_url?: string

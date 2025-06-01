@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,33 +11,32 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-interface NameEditModalProps {
+interface INameEditModalProps {
   isOpen: boolean
   onClose: () => void
   currentName: string
   onSave: (newName: string) => void
 }
 
-export function NameEditModal({ isOpen, onClose, currentName, onSave }: NameEditModalProps) {
-  const [newName, setNewName] = useState("")
+export function NameEditModal({ isOpen, onClose, currentName, onSave }: INameEditModalProps) {
+  const [newName, setNewName] = useState("");
 
   useEffect(() => {
     if (isOpen) {
       setNewName(currentName)
     }
-  }, [isOpen, currentName])
+  }, [isOpen, currentName]);
 
   const handleSave = () => {
     if (newName.trim()) {
       onSave(newName.trim())
     }
     onClose()
-  }
+  };
 
   const handleCancel = () => {
-    setNewName(currentName)
     onClose()
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

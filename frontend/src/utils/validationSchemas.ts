@@ -4,11 +4,11 @@ export const createRoomSchema = z.object({
   name: z.string().min(5, "Name is required"),
   category: z.string().nonempty("Category is required"),
   description: z.string().optional(),
-})
+});
 
 export const sendMessageSchema = z.object({
   message: z.string().min(1)
-})
+});
 
 export const loginFormSchema = z.object({
     email: z
@@ -18,7 +18,7 @@ export const loginFormSchema = z.object({
   password: z
     .string()
     .min(1, { message: "Password is required" }),
-})
+});
 
 export const registerFormSchema = loginFormSchema.extend({
   name: z

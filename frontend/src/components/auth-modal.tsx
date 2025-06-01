@@ -1,37 +1,44 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import type { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm, type FieldErrors } from "react-hook-form"
 import { Eye, EyeOff } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle 
+} from "@/components/ui/dialog"
 import { toast } from "sonner" 
-import { useForm, type FieldErrors } from "react-hook-form"
 import { loginFormSchema, registerFormSchema } from "@/utils/validationSchemas"
-import type { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
 import { useAuth } from "@/hooks/useAuth"
-import { useNavigate } from "react-router-dom"
 import type { LoginData, RegisterData } from "@/@types/auth"
-interface AuthModalProps {
+interface IAuthModalProps {
   isOpen: boolean
   setIsOpen: (value: boolean) => void
 }
 
-type RegisterFormData = z.infer<typeof registerFormSchema>
-type LoginFormData = z.infer<typeof loginFormSchema>
+type RegisterFormData = z.infer<typeof registerFormSchema>;
+type LoginFormData = z.infer<typeof loginFormSchema>;
 
 
-export function AuthModal({ isOpen, setIsOpen }: AuthModalProps) {
-  const [authMode, setAuthMode] = useState<"login" | "register">("login")
-  const [showPassword, setShowPassword] = useState(false)
-  const navigate = useNavigate()
-  const { signIn, signUp } = useAuth()
+export function AuthModal({ isOpen, setIsOpen }: IAuthModalProps) {
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
+  const { signIn, signUp } = useAuth();
 
   const form = useForm<RegisterFormData | LoginFormData>({
     resolver: zodResolver(
       authMode === "register" ? registerFormSchema : loginFormSchema
     )
-  })
+  });
 
   const { 
     register, 
@@ -49,7 +56,6 @@ export function AuthModal({ isOpen, setIsOpen }: AuthModalProps) {
       hasSuccesfullAuth = await signUp(data as RegisterData)
     }
 
-      
     if (hasSuccesfullAuth) {
       reset()
 
@@ -61,13 +67,13 @@ export function AuthModal({ isOpen, setIsOpen }: AuthModalProps) {
       setIsOpen(false)
       navigate('/rooms')
     }
-  }
+  };
 
   const switchAuthMode = () => {
     setAuthMode(authMode === "login" ? "register" : "login")
 
     reset()
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -125,16 +131,16 @@ export function AuthModal({ isOpen, setIsOpen }: AuthModalProps) {
                 onClick={() => setShowPassword(!showPassword)}
                 disabled={isSubmitting}
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </Button>
             </div>
           </div>
 
           {authMode === "register" && (
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirm_password">Confirm Password</Label>
                 <Input
-                  id="confirmPassword"
+                  id="confirm_password"
                   type={"password"}
                   placeholder="Confirm your password"
                   disabled={isSubmitting}
@@ -152,7 +158,13 @@ export function AuthModal({ isOpen, setIsOpen }: AuthModalProps) {
             <span className="text-muted-foreground">
               {authMode === "login" ? "Don't have an account? " : "Already have an account? "}
             </span>
-            <Button type="button" variant="link" className="p-0 h-auto" onClick={switchAuthMode} disabled={isSubmitting}>
+            <Button 
+              type="button" 
+              variant="link" 
+              className="p-0 h-auto" 
+              onClick={switchAuthMode} 
+              disabled={isSubmitting}
+              >
               {authMode === "login" ? "Sign up" : "Sign in"}
             </Button>
           </div>

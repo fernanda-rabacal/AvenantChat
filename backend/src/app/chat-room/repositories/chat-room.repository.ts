@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service'; 
+import { ChatRoomMember } from '@prisma/client';
+
 import { CreateChatRoomDto } from '../dto/create-chat-room.dto';
+import { PrismaService } from 'src/prisma/prisma.service'; 
 import { ISendMessageProps, IJoinChatProps, ILeaveChatProps, IUser } from 'src/@types/interfaces';
 import { ConflictError } from 'src/common/errors/types/ConflictError';
 import { encryptData } from 'src/util/crypt';
-import { ChatRoomMember } from '@prisma/client';
 
 @Injectable()
 export class ChatRoomRepository {
@@ -24,7 +25,7 @@ export class ChatRoomRepository {
     });
 
     const systemUser = await this.prisma.user.upsert({
-      where: { email: 'system@chat.avenant.com' },
+      where: { email: this.systemEmail },
       update: {},
       create: {
         name: 'System',
@@ -48,6 +49,7 @@ export class ChatRoomRepository {
 
   async findAll() {
     let chatRooms = await this.prisma.chatRoom.findMany();
+
     chatRooms = await Promise.all(chatRooms.map(async chatRoom => {
       const membersCount = await this.prisma.chatRoomMember.count({
         where: {
@@ -157,8 +159,6 @@ export class ChatRoomRepository {
         }
       }
     });
-
-
   }
 
   async getChatRoomMembers(id_chat_room: number) {
@@ -273,7 +273,7 @@ export class ChatRoomRepository {
     }
 
     if (!chatMember) {
-      throw new Error("User doesn't belong in this room.");
+      throw new ConflictError("User doesn't belong in this room.");
     }
 
     const newMessage = await this.prisma.chatMessages.create({

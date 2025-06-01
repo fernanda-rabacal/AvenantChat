@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Req, Logger } from '@nestjs/common';
 import { ChatRoomService } from './chat-room.service';
 import { CreateChatRoomDto } from './dto/create-chat-room.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
@@ -8,39 +8,70 @@ import { AuthTokenDto } from '../auth/dto/auth-token.dto';
 @Controller('chat-room')
 export class ChatRoomController {
   constructor(private readonly chatRoomService: ChatRoomService) {}
+  private readonly logger = new Logger(ChatRoomController.name);
 
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   @Post()
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   create(@Body() create_chat_room_dto: CreateChatRoomDto) {
-    return this.chatRoomService.create(create_chat_room_dto);
+    try {
+      return this.chatRoomService.create(create_chat_room_dto);
+    } catch (err) {
+      this.logger.error(err);
+
+      throw err;
+    }
   }
 
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   @Get()
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   findAll() {
-    return this.chatRoomService.findAll();
+    try {
+      return this.chatRoomService.findAll();
+    } catch (err) {
+      this.logger.error(err);
+
+      throw err;
+    }
   }
 
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   @Get('/:id_chat_room')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   findById(@Param('id_chat_room') id_chat_room: number) {
-    return this.chatRoomService.findById(+id_chat_room);
+    try {
+      return this.chatRoomService.findById(+id_chat_room);
+    } catch (err) {
+      this.logger.error(err);
+
+      throw err;
+    }
   }
 
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
   @Post('/join')
-  async join(@Req() req: Request  & { user: AuthTokenDto }, @Body() id_chat_room: number) {
-    return this.chatRoomService.joinChatRoom({ id_chat_room, id_user: req.user.id_user });
-  }
-
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
+  async join(@Req() req: Request  & { user: AuthTokenDto }, @Body() id_chat_room: number) {
+    try {
+      return this.chatRoomService.joinChatRoom({ id_chat_room, id_user: req.user.id_user });
+    } catch (err) {
+      this.logger.error(err);
+
+      throw err;
+    }
+  }
+
   @Post('/leave')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   async leave(@Req() req: Request  & { user: AuthTokenDto }, @Body() id_chat_room: number) {
-    return this.chatRoomService.leaveChatRoom({ id_chat_room, id_user: req.user.id_user });
+    try {
+      return this.chatRoomService.leaveChatRoom({ id_chat_room, id_user: req.user.id_user });
+    } catch (err) {
+      this.logger.error(err);
+
+      throw err;
+    }
   }
 }

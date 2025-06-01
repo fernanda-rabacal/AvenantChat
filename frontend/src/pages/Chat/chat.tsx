@@ -4,27 +4,32 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import type { z } from "zod"
 
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from "@/components/ui/tooltip"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { UserChatList } from "@/components/user-chat-list-component"
 import { ChatMembersList } from "./components/chat-members-list-component" 
-import { UserChatList } from "../../components/user-chat-list-component"
+import { ChatMessageItem } from "./components/chat-message"
 
 import { sendMessageSchema } from "@/utils/validationSchemas"
 import { verifyShoudGroupMessage } from "@/utils/verifyShouldGroupMessage"
 import { useMobile } from "@/hooks/useMobile" 
 import { useChat } from "@/hooks/useChat"
-import { ChatMessageItem } from "./components/chat-message"
 
-type SendMessageFormData = z.infer<typeof sendMessageSchema>
+type SendMessageFormData = z.infer<typeof sendMessageSchema>;
 
 export default function ChatRoom() {
-  const [showMembers, setShowMembers] = useState(true)
-  const [showChatList, setShowChatList] = useState(true)
+  const [showMembers, setShowMembers] = useState(true);
+  const [showChatList, setShowChatList] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const isMobile = useMobile()
-  const { messages, sendMessage, activeRoom } = useChat()
+  const isMobile = useMobile();
+  const { messages, sendMessage, activeRoom } = useChat();
   const { 
       register,
       handleSubmit,
@@ -33,13 +38,34 @@ export default function ChatRoom() {
       formState: { isSubmitting }
     } = useForm<SendMessageFormData>({
       resolver: zodResolver(sendMessageSchema)
-    })
+    });
 
-  const message = watch('message')
+  const message = watch('message');
+
+  const toggleUserChatList = () => {
+    setShowChatList(!showChatList)
+
+    if (isMobile && !showChatList) {
+      setShowMembers(false);
+    }
+  };
+
+  const handleSendMessage = async (data: SendMessageFormData) => {
+    sendMessage(data.message);
+    reset();
+  };
+
+  const toggleMembersList = () => {
+    setShowMembers(!showMembers);
+
+    if (isMobile && !showMembers) {
+      setShowChatList(false);
+    }
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
+  }, [messages]);
 
   useEffect(() => {
     if (isMobile) {
@@ -49,27 +75,7 @@ export default function ChatRoom() {
       setShowMembers(true)
       setShowChatList(true)
     }
-  }, [isMobile])
-
-
-  const toggleUserChatList = () => {
-    setShowChatList(!showChatList)
-    if (isMobile && !showChatList) {
-      setShowMembers(false)
-    }
-  }
-
-  const handleSendMessage = async (data: SendMessageFormData) => {
-    sendMessage(data.message)
-    reset()
-  }
-
-  const toggleMembersList = () => {
-    setShowMembers(!showMembers)
-    if (isMobile && !showMembers) {
-      setShowChatList(false)
-    }
-  }
+  }, [isMobile]);
 
   return (
     <main className="flex h-screen bg-background">
@@ -85,6 +91,7 @@ export default function ChatRoom() {
             <MessageCircle size={20} className="mr-2 text-muted-foreground" />
             <h3 className="font-semibold">{activeRoom?.name}</h3>
           </div>
+
           <div className="flex items-center space-x-1">
             <TooltipProvider>
               <Tooltip>
@@ -98,6 +105,7 @@ export default function ChatRoom() {
             </TooltipProvider>
           </div>
         </div>
+
         <ScrollArea className="flex-1 p-4 h-[75%]">
           <div>
             {messages.map((message, index) => {
@@ -138,19 +146,7 @@ export default function ChatRoom() {
                 className="pr-20 py-5"
                 {...register("message")}
               />
-              {/* <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center space-x-1">
-                <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-                  <AtSign size={18} />
-                </Button>
-                <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-                  <Smile size={18} />
-                </Button>
-                <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-                  <Paperclip size={18} />
-                </Button>
-              </div> */}
             </div>
-
             <Button type="submit" size="lg" className="flex-shrink-0" disabled={isSubmitting || !message}>
               <Send size={22} />
             </Button>
@@ -161,7 +157,8 @@ export default function ChatRoom() {
       <ChatMembersList 
         toggleMembersList={toggleMembersList} 
         isMobile={isMobile} 
-        showMembers={showMembers} />
+        showMembers={showMembers} 
+        />
     </main>
   )
 }
