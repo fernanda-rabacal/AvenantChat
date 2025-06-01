@@ -1,24 +1,30 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-refresh/only-export-components */
-import type { ChatRoom, ChatRoomMember, CreateRoomData, Message } from "@/@types/interfaces";
+import type { 
+  IChatRoom, 
+  IChatMember, 
+  CreateRoomDataProps, 
+  IChatMessage 
+} from "@/@types/interfaces";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/axios";
 import { createSocketInstance } from "@/lib/socket-io";
 import axios from "axios";
+import { parseCookies } from "nookies";
 import { createContext, useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { Socket } from "socket.io-client";
 import { toast } from "sonner";
 
 interface ChatContextType {
-  rooms: ChatRoom[];
-  userRooms: ChatRoom[];
-  chatRoomMembers: ChatRoomMember[];
-  messages: Message[];
-  activeRoom: ChatRoom | null;
+  rooms: IChatRoom[];
+  userRooms: IChatRoom[];
+  chatRoomMembers: IChatMember[];
+  messages: IChatMessage[];
+  activeRoom: IChatRoom | null;
   getChatRooms: () => void;
-  createChatRoom: (data: CreateRoomData) => void;
-  changeChatRoom: (room: ChatRoom) => void;
-  joinChatRoom: (room: ChatRoom) => void;
+  createChatRoom: (data: CreateRoomDataProps) => void;
+  joinChatRoom: (room: IChatRoom) => void;
+  enterChatRoom: (room: IChatRoom) => void;
   leaveChatRoom: (id: number) => void;
   sendMessage: (msg: string) => void;
 }
@@ -30,42 +36,51 @@ interface ChatContextProviderProps {
 export const ChatContext = createContext({} as ChatContextType);
 
 export function ChatContextProvider({ children }: ChatContextProviderProps) {
-  const [rooms, setRooms] = useState<ChatRoom[]>([]);
-  const [activeRoom, setActiveRoom] = useState<ChatRoom | null>(null);
-  const [chatRoomMembers, setChatRoomMembers] = useState<ChatRoomMember[]>([]);
-  const [userRooms, setUserRooms] = useState<ChatRoom[]>([]);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [rooms, setRooms] = useState<IChatRoom[]>([]);
+  const [activeRoom, setActiveRoom] = useState<IChatRoom | null>(null);
+  const [chatRoomMembers, setChatRoomMembers] = useState<IChatMember[]>([]);
+  const [userRooms, setUserRooms] = useState<IChatRoom[]>([]);
+  const [messages, setMessages] = useState<IChatMessage[]>([]);
   const [socketInstance, setSocketInstance] = useState<Socket | null>(null);
   const { isAuthenticated, user } = useAuth()
 
   useEffect(() => {
     if (isAuthenticated && user?.id_user) {
-      const newSocket = createSocketInstance(user.id_user);
-      setSocketInstance(newSocket);
-      newSocket.connect();
+      const cookieName = `avenant_token_${ user?.id_user}`;
+      const cookies = parseCookies();
+      const token = cookies[cookieName];
 
-      return () => {
-        newSocket.disconnect();
-      };
-    } else {
-      if (socketInstance) {
-        socketInstance.disconnect();
-        setSocketInstance(null);
-      }
+      console.log(token)
+
+      if (token) {
+        const newSocket = createSocketInstance(user.id_user);
+        setSocketInstance(newSocket);
+        newSocket.connect();
+        
+        return () => {
+          newSocket.disconnect();
+        };
+      } else {
+        if (socketInstance) {
+          socketInstance.disconnect();
+          setSocketInstance(null);
+        }
+      } 
     }
-  }, [isAuthenticated, user?.id_user]);
+  }, [user?.id_user]);
 
 
-  const joinChatRoom = useCallback((room: ChatRoom) => {
+  const joinChatRoom = useCallback((room: IChatRoom) => {
     socketInstance?.emit("join_chat", { id_chat_room: room.id_chat_room });
 
     setActiveRoom(room)
   }, [socketInstance]);
 
-  const changeChatRoom = useCallback((new_room: ChatRoom) => {
-    socketInstance?.emit("change_chat_room", { id_chat_room: new_room.id_chat_room });
-    setActiveRoom(new_room)
-  },[socketInstance])
+  const enterChatRoom = useCallback((room: IChatRoom) => {
+    socketInstance?.emit("enter_chat", { id_chat_room: room.id_chat_room });
+
+    setActiveRoom(room)
+  }, [socketInstance]);
 
   const leaveChatRoom = useCallback((roomId: number) => {
     socketInstance?.emit("leave_chat", { id_user: user?.id_user, id_chat_room: roomId });
@@ -84,7 +99,7 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
   }, [socketInstance, activeRoom]);
 
   const createChatRoom = useCallback(
-    async (data: CreateRoomData) => {
+    async (data: CreateRoomDataProps) => {
       try {
         const response = await api.post("/chat-room", { ...data, created_by: user?.id_user });
         const createdRoom = response.data.created_room;
@@ -110,7 +125,7 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
       setRooms(response.data);
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        toast.error(err.response?.data.message|| "Failed to get chat rooms");
+        toast.error(err.response?.data.message || "Failed to get chat rooms");
       }
       return false;
     }
@@ -122,7 +137,7 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
       setUserRooms(response.data);
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        toast.error(err.response?.data.message|| "Failed to get chat rooms");
+        toast.error(err.response?.data.message || "Failed to get user chat rooms");
       }
       return false;
     }
@@ -135,7 +150,7 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
       setChatRoomMembers(response.data.members)
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        toast.error(err.response?.data.message|| "Failed to get chat room");
+        toast.error(err.response?.data.message || "Failed to get chat room");
       }
       return false;
     }
@@ -149,11 +164,11 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
       userRooms,
       activeRoom,
       joinChatRoom,
-      changeChatRoom,
       leaveChatRoom,
       sendMessage,
       getChatRooms,
-      createChatRoom
+      createChatRoom,
+      enterChatRoom
     }),
     [
       rooms, 
@@ -162,16 +177,16 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
       activeRoom, 
       userRooms, 
       joinChatRoom, 
-      changeChatRoom,
       leaveChatRoom, 
       sendMessage, 
       getChatRooms, 
       createChatRoom,
+      enterChatRoom
     ]
   );
 
   useEffect(() => {
-    if (!socketInstance) return;
+    if (!socketInstance || !user) return;
 
     socketInstance.off("connect");
     socketInstance.off("user_rooms_list");
@@ -191,12 +206,11 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
       setChatRoomMembers(data.chat_room_members);
     });
 
-    socketInstance.on("message", (msg: Message) => {
+    socketInstance.on("message", (msg: IChatMessage) => {
       setMessages((prev) => [...prev, msg]);
-      console.log("emitiu mensagem");
     });
 
-    socketInstance.on("saved_messages", (messages: Message[]) => {
+    socketInstance.on("saved_messages", (messages: IChatMessage[]) => {
       setMessages(messages);
     });
 
@@ -207,7 +221,7 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
       socketInstance.off("message");
       socketInstance.off("saved_messages");
     };
-  }, [socketInstance]);
+  }, [socketInstance, user]);
 
   useEffect(() => {
     if (!user?.id_user) return;
@@ -239,7 +253,7 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
     if (user) {
       getUserChatRooms(user.id_user);
     }
-  }, [user, getUserChatRooms]);
+  }, [user]);
 
   return (
      <ChatContext.Provider value={value}>

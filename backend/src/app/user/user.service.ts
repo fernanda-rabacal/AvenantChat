@@ -8,8 +8,8 @@ import { NotFoundError } from 'src/common/errors/types/NotFoundError';
 export class UserService {
   constructor(private readonly repository: UserRepository) {}
 
-  async create(createUserDto: CreateUserDto) {
-    return this.repository.create(createUserDto);
+  async create(create_user_dto: CreateUserDto) {
+    return this.repository.create(create_user_dto);
   }
 
   async findAll() {
@@ -22,8 +22,8 @@ export class UserService {
     return users;
   }
 
-  async findById(id: number) {
-    const user = this.repository.findById(id);
+  async findById(id_user: number) {
+    const user = this.repository.findById(id_user);
 
     if (!user) {
       throw new NotFoundError('Usuário não encontrado.');
@@ -50,7 +50,7 @@ export class UserService {
     return this.repository.saveUserConnectState(id_user, connection_state)
   }
 
-  async update(userId: number, updateUserDto: UpdateUserDto) {
-    return this.repository.update(userId, updateUserDto);
+  async update(id_user: number, update_user_dto: UpdateUserDto) {
+    return this.repository.update(id_user, update_user_dto);
   }
 }

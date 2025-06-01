@@ -1,14 +1,12 @@
-import { ChatProps, MessageProps, SendMessageProps } from './../../@types/chat-rooms';
+import { IJoinChatProps, ILeaveChatProps, ISendMessageProps } from '../../@types/interfaces';
 import { Injectable } from '@nestjs/common';
 import { CreateChatRoomDto } from './dto/create-chat-room.dto';
 import { ChatRoomRepository } from './repositories/chat-room.repository';
-import { UserService } from '../user/user.service';
 
 @Injectable()
 export class ChatRoomService {
   constructor(
-    private readonly repository: ChatRoomRepository,
-    private readonly userService: UserService
+    private readonly repository: ChatRoomRepository
   ) {}
 
   async create(create_chat_room_dto: CreateChatRoomDto) {
@@ -35,15 +33,15 @@ export class ChatRoomService {
     return this.repository.getUserRooms(id_user)
   }
 
-  async joinChatRoom(join_chat_props: ChatProps) {
+  async joinChatRoom(join_chat_props: IJoinChatProps) {
     return this.repository.join(join_chat_props)
   }
 
-  async leaveChatRoom(join_chat_props: ChatProps) {
-    return this.repository.leave(join_chat_props)
+  async leaveChatRoom(leave_chat_props: ILeaveChatProps) {
+    return this.repository.leave(leave_chat_props)
   }
 
-  async sendMessage(message_infos: SendMessageProps) {
-    return this.repository.sendMessage(message_infos)
+  async sendMessage(message_infos_props: ISendMessageProps) {
+    return this.repository.sendMessage(message_infos_props)
   }
 }

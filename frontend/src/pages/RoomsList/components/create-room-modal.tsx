@@ -26,7 +26,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createRoomSchema } from "@/utils/validationSchemas";
 import { useChat } from "@/hooks/useChat";
-import type { CreateRoomData } from "@/@types/interfaces";
+import type { CreateRoomDataProps } from "@/@types/interfaces";
 
 type CreateRoomFormData = z.infer<typeof createRoomSchema>
 export function CreateRoomModal() {
@@ -49,7 +49,7 @@ export function CreateRoomModal() {
 
   const categories = ["Tech", "Gaming", "Books"]
 
-  const handleCreateRoom = async (data: CreateRoomData) => {
+  const handleCreateRoom = async (data: CreateRoomDataProps) => {
     createChatRoom(data)
     setIsModalOpen(false)
     navigate(`/rooms/chat`)

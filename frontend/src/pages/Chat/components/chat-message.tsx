@@ -1,12 +1,12 @@
 // components/ChatMessageItem.tsx
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/utils/utils"; 
-import { type Message } from "@/@types/interfaces";
+import { type IChatMessage } from "@/@types/interfaces";
 import { type RefObject } from "react";
 import { formatTimestamp } from "@/utils/formatTimestamp";
 
 interface ChatMessageItemProps {
-  message: Message;
+  message: IChatMessage;
   shouldGroup: boolean;
   isLastMessage: boolean;
   messagesEndRef: RefObject<HTMLDivElement | null>;

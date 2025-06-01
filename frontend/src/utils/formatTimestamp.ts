@@ -14,6 +14,6 @@ export const formatTimestamp = (date_value: Date | string) => {
   if (diffInHours < 1) {
     return date.fromNow();
   } else {
-    return date.format('MMM D [at] h:mm A'); // e.g., "May 31 at 2:45 PM"
+    return date.format('MMM D [at] h:mm A');
   }
 };

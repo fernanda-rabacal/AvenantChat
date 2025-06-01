@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react-refresh/only-export-components */
 import { api, setAuthInterceptor } from "@/lib/axios";
 import { type ReactNode, createContext, useEffect, useState } from "react"
@@ -28,13 +29,23 @@ type AuthContextType = {
 export const AuthContext = createContext({} as AuthContextType)
 
 export function AuthContextProvider({ children } : AuthProps) {
-  const { avenant_token } = parseCookies()
   const [user, setUser] = useState<User | null>(null)
 
   const isAuthenticated = !!user;
 
   function signOut() {
-    destroyCookie(undefined, 'avenant_token')
+    if (!user) return;
+
+    const cookies = parseCookies();
+      for (const cookieName in cookies) {
+        if (cookieName.startsWith('avenant_token_')) {
+          destroyCookie(undefined, cookieName);
+        }
+      }
+
+    const storageKey = `avenant_active_room_${user.id_user}`
+    localStorage.removeItem(storageKey)
+
     setUser(null)
   }
 
@@ -77,31 +88,38 @@ export function AuthContextProvider({ children } : AuthProps) {
           'Authorization': `Bearer ${token}`,
         }
       })
-
       const user = response.data
       setCookie(undefined, `avenant_token_${user.id_user}`, token, {
         maxAge: 60 * 60 * 24 * 7
       })
       setAuthInterceptor(user.id_user);
-
       setUser(user)
     } catch(err: unknown) {
       if (axios.isAxiosError(err)) {          
         toast.error(err.response?.data.message)
 
         if (err.response?.status === 401) {
-          return destroyCookie(undefined, 'avenant_token')
+          const cookies = parseCookies();
+          for (const cookieName in cookies) {
+            if (cookieName.startsWith('avenant_token_')) {
+              destroyCookie(undefined, cookieName);
+            }
+          }
         }
       }
     }
   }
 
   useEffect(() => {
-    if (avenant_token) {
-      getUserByToken(avenant_token)
+    const cookies = parseCookies();
+    for (const cookieName in cookies) {
+      console.log(cookies)
+      if (cookieName.startsWith('avenant_token_')) {
+        getUserByToken(cookies[cookieName]);
+        return;
+      }
     }
-  }, [avenant_token])
-  
+  }, []); 
 
   return (
     <AuthContext.Provider value={{ user, isAuthenticated, signIn, signOut, signUp }}>

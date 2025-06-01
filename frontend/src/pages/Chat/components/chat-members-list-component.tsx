@@ -1,7 +1,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "../../../../components/ui/avatar";
-import { Button } from "../../../../components/ui/button";
-import { ScrollArea } from "../../../../components/ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/utils/utils";
 import { useChat } from "@/hooks/useChat";
 

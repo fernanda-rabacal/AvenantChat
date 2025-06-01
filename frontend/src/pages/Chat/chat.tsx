@@ -8,15 +8,14 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { ChatMembersList } from "./components/ChatMembersList/chat-members-list-component"
-import { UserChatList } from "./components/UserChatList/user-chat-list-component"
+import { ChatMembersList } from "./components/chat-members-list-component" 
+import { UserChatList } from "../../components/user-chat-list-component"
 
 import { sendMessageSchema } from "@/utils/validationSchemas"
 import { verifyShoudGroupMessage } from "@/utils/verifyShouldGroupMessage"
 import { useMobile } from "@/hooks/useMobile" 
 import { useChat } from "@/hooks/useChat"
-import type { ChatRoom } from "@/@types/interfaces"
-import { ChatMessageItem } from "./components/ChatMessage/chat-message"
+import { ChatMessageItem } from "./components/chat-message"
 
 type SendMessageFormData = z.infer<typeof sendMessageSchema>
 
@@ -25,7 +24,7 @@ export default function ChatRoom() {
   const [showChatList, setShowChatList] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobile = useMobile()
-  const { messages, sendMessage } = useChat()
+  const { messages, sendMessage, activeRoom } = useChat()
   const { 
       register,
       handleSubmit,
@@ -39,6 +38,10 @@ export default function ChatRoom() {
   const message = watch('message')
 
   useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages])
+
+  useEffect(() => {
     if (isMobile) {
       setShowMembers(false)
       setShowChatList(false)
@@ -48,20 +51,17 @@ export default function ChatRoom() {
     }
   }, [isMobile])
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
-
-  const handleSendMessage = async (data: SendMessageFormData) => {
-    sendMessage(data.message)
-    reset()
-  }
 
   const toggleUserChatList = () => {
     setShowChatList(!showChatList)
     if (isMobile && !showChatList) {
       setShowMembers(false)
     }
+  }
+
+  const handleSendMessage = async (data: SendMessageFormData) => {
+    sendMessage(data.message)
+    reset()
   }
 
   const toggleMembersList = () => {
@@ -83,7 +83,7 @@ export default function ChatRoom() {
         <div className="h-14 border-b flex items-center justify-between px-4 bg-background">
           <div className="flex items-center">
             <MessageCircle size={20} className="mr-2 text-muted-foreground" />
-            <h3 className="font-semibold">Chat Server</h3>
+            <h3 className="font-semibold">{activeRoom?.name}</h3>
           </div>
           <div className="flex items-center space-x-1">
             <TooltipProvider>

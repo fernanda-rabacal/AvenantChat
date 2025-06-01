@@ -30,13 +30,13 @@ const ADMIN = 'Admin'
 export class ChatRoomGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
-  private readonly logger = new Logger(ChatRoomGateway.name);
-  private readonly systemName = 'System';
   constructor(
     private readonly chatRoomService: ChatRoomService,
     private readonly usesrService: UserService,
     private readonly jwtService: JwtService,
   ) {}
+  private readonly logger = new Logger(ChatRoomGateway.name);
+  private readonly systemEmail = process.env.SYSTEM_USER_EMAIL;
 
   @WebSocketServer() io: Namespace;
 
@@ -164,7 +164,6 @@ export class ChatRoomGateway
     this.io.to(`${newRoomName}-${id_chat_room}`).emit('saved_messages', savedMessages)
   }
 
-
   @UseGuards(GatewayAdminGuard)
   @SubscribeMessage('leave_chat')
   async leaveChatRoom(
@@ -188,7 +187,7 @@ export class ChatRoomGateway
     const savedMessage = await this.chatRoomService.sendMessage({
       id_user,
       id_chat_room,
-      user_name: this.systemName,
+      user_email: this.systemEmail,
       content: `${removedUser.user.name} has left the chat`
     });
 
@@ -216,7 +215,7 @@ export class ChatRoomGateway
     const savedMessage = await this.chatRoomService.sendMessage({
       id_user,
       id_chat_room,
-      user_name: this.systemName,
+      user_email: this.systemEmail,
       content: `${addedUser.user.name} has joined the chat`
     });
     

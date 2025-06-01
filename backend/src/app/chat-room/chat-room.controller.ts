@@ -1,7 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
 import { ChatRoomService } from './chat-room.service';
 import { CreateChatRoomDto } from './dto/create-chat-room.dto';
-import { UpdateChatRoomDto } from './dto/update-chat-room.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guard/jwt.guard';
 import { AuthTokenDto } from '../auth/dto/auth-token.dto';
@@ -10,16 +9,22 @@ import { AuthTokenDto } from '../auth/dto/auth-token.dto';
 export class ChatRoomController {
   constructor(private readonly chatRoomService: ChatRoomService) {}
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createChatRoomDto: CreateChatRoomDto) {
-    return this.chatRoomService.create(createChatRoomDto);
+  create(@Body() create_chat_room_dto: CreateChatRoomDto) {
+    return this.chatRoomService.create(create_chat_room_dto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
     return this.chatRoomService.findAll();
   }
 
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @Get('/:id_chat_room')
   findById(@Param('id_chat_room') id_chat_room: number) {
     return this.chatRoomService.findById(+id_chat_room);
