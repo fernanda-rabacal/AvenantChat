@@ -1,3 +1,6 @@
+import { Settings, Edit, LogOut } from "lucide-react"
+import { useState } from "react"
+
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -6,20 +9,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu"
-import { Settings, Edit, LogOut } from "lucide-react"
 import { ConfirmLogoutModal } from "./confirm-logout-modal"
-import { useState } from "react"
 
-interface SettingsDropdownProps {
+interface ISettingsDropdownProps {
   onEditName: () => void
 }
 
-export function SettingsDropdown({ onEditName }: SettingsDropdownProps) {
-  const [isOpen, setIsOpen] = useState(false)
+export function SettingsDropdown({ onEditName }: ISettingsDropdownProps) {
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleIsOpen = () => {
     setIsOpen(true)
-  }
+  };
 
   return (
     <DropdownMenu>

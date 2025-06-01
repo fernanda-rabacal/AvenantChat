@@ -26,13 +26,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createRoomSchema } from "@/utils/validationSchemas";
 import { useChat } from "@/hooks/useChat";
-import type { CreateRoomDataProps } from "@/@types/interfaces";
+import type { ICreateRoomDataProps } from "@/@types/interfaces";
 
-type CreateRoomFormData = z.infer<typeof createRoomSchema>
+type CreateRoomFormData = z.infer<typeof createRoomSchema>;
+
 export function CreateRoomModal() {
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const navigate = useNavigate()
-  const { createChatRoom } = useChat()
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
+  const { createChatRoom } = useChat();
   const { 
     register,
     handleSubmit,
@@ -45,21 +46,21 @@ export function CreateRoomModal() {
     defaultValues: {
       category: "",
     },
-  })
+  });
 
   const categories = ["Tech", "Gaming", "Books"]
 
-  const handleCreateRoom = async (data: CreateRoomDataProps) => {
-    createChatRoom(data)
-    setIsModalOpen(false)
-    navigate(`/rooms/chat`)
-  }
+  const handleCreateRoom = async (data: ICreateRoomDataProps) => {
+    createChatRoom(data);
+    setIsModalOpen(false);
+    navigate(`/rooms/chat`);
+  };
 
   const handleCancelCreateRoom = () => {
-     setIsModalOpen(false)
-     clearErrors()
-     reset()
-  }
+     setIsModalOpen(false);
+     clearErrors();
+     reset();
+  };
 
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -112,8 +113,6 @@ export function CreateRoomModal() {
                 )}
               />
             </div>
-
-            {/* Description */}
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea

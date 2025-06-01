@@ -1,14 +1,15 @@
 import { MessageCircle } from "lucide-react";
-import { Button } from "./ui/button";
 import { NavLink } from "react-router-dom";
-import { useAuthModal } from "@/hooks/useAuthModal";
+
+import { Button } from "./ui/button";
 import { AuthModal } from "./auth-modal";
-import { useAuth } from "@/hooks/useAuth";
 import { ConfirmLogoutModal } from "./confirm-logout-modal";
+import { useAuthModal } from "@/hooks/useAuthModal";
+import { useAuth } from "@/hooks/useAuth";
 
 export function Header() {
-  const { setIsOpen, isOpen, isOpenLogout, setIsOpenLogout } = useAuthModal()
-  const { isAuthenticated, user } = useAuth()
+  const { setIsOpen, isOpen, isOpenLogout, setIsOpenLogout } = useAuthModal();
+  const { isAuthenticated, user } = useAuth();
 
   return (
     <header className="container mx-auto px-4 py-6 flex items-center justify-between">

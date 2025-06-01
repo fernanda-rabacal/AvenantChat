@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { LogOut } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -11,17 +12,16 @@ import {
 } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import { useAuth } from "@/hooks/useAuth"
-import { useNavigate } from "react-router-dom"
 
-interface LogoutModalProps {
+interface ILogoutModalProps {
   isOpen: boolean
   setIsOpen: (value: boolean) => void
 }
 
-export function ConfirmLogoutModal({ isOpen, setIsOpen }: LogoutModalProps) {
-  const [isLoading, setIsLoading] = useState(false)
+export function ConfirmLogoutModal({ isOpen, setIsOpen }: ILogoutModalProps) {
+  const [isLoading, setIsLoading] = useState(false);
   const { signOut } = useAuth();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleConfirm = async () => {
     setIsLoading(true)
@@ -32,12 +32,12 @@ export function ConfirmLogoutModal({ isOpen, setIsOpen }: LogoutModalProps) {
       setIsOpen(false)
       navigate("/")
     } catch (err: unknown) {
-      console.log(err)
+      console.error("signOut - confirmLogout err>> ", err)
       toast.error('There was an error logging out. Please try again.')
     } finally {
       setIsLoading(false)
     }
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -53,7 +53,13 @@ export function ConfirmLogoutModal({ isOpen, setIsOpen }: LogoutModalProps) {
         </DialogHeader>
 
         <DialogFooter className="sm:justify-center">
-          <Button type="button" variant="destructive" onClick={handleConfirm} disabled={isLoading} className="gap-2">
+          <Button 
+            type="button" 
+            variant="destructive" 
+            onClick={handleConfirm} 
+            disabled={isLoading} 
+            className="gap-2"
+            >
             {isLoading ? (
               <>
                 <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -61,7 +67,7 @@ export function ConfirmLogoutModal({ isOpen, setIsOpen }: LogoutModalProps) {
               </>
             ) : (
               <>
-                <LogOut className="h-4 w-4" />
+                <LogOut size={16} />
                 Logout
               </>
             )}
