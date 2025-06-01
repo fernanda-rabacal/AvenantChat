@@ -1,16 +1,11 @@
-export interface CreateRoomDataProps {
-  name: string;
-  category: string;
-  description?: string;
-}
-
 export interface IUser {
-  id_user: string
+  id_user: number
   name: string
   email: string;
   avatar_url?: string
   is_online: boolean
-  created_at: Date
+  created_at: Date;
+  password?: string
 }
 
 export interface IChatRoom {
@@ -19,8 +14,6 @@ export interface IChatRoom {
   name: string;
   category: string;
   description?: string;
-  last_activity: string;
-  members_count?: number;
   created_at: Date;
   created_by_id: number;
 }
@@ -40,12 +33,18 @@ export interface IChatMessage {
   sent_at: Date;
   edited_at?: Date;
   is_deleted?: boolean;
-  user?: IUser
 }
 
-export interface ISendMessage {
+export interface ISendMessageProps {
   id_chat_room: number;
   id_user: number;
   content: string;
-  user_name?: string;
+  user_email?: string;
 }
+
+export interface IJoinChatProps {
+  id_chat_room: number;
+  id_user: number;
+}
+
+export interface ILeaveChatProps extends IJoinChatProps {}

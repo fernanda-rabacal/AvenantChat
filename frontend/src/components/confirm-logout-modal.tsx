@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import { useAuth } from "@/hooks/useAuth"
+import { useNavigate } from "react-router-dom"
 
 interface LogoutModalProps {
   isOpen: boolean
@@ -20,6 +21,7 @@ interface LogoutModalProps {
 export function ConfirmLogoutModal({ isOpen, setIsOpen }: LogoutModalProps) {
   const [isLoading, setIsLoading] = useState(false)
   const { signOut } = useAuth();
+  const navigate = useNavigate()
 
   const handleConfirm = async () => {
     setIsLoading(true)
@@ -28,6 +30,7 @@ export function ConfirmLogoutModal({ isOpen, setIsOpen }: LogoutModalProps) {
       signOut()
       toast.success('Logged out successfully')
       setIsOpen(false)
+      navigate("/")
     } catch (err: unknown) {
       console.log(err)
       toast.error('There was an error logging out. Please try again.')

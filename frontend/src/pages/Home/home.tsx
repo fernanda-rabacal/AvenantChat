@@ -4,16 +4,16 @@ import { Header } from "@/components/header"
 import { AuthModal } from "@/components/auth-modal"
 import { useAuthModal } from "@/hooks/useAuthModal"
 import { useNavigate } from "react-router-dom"
+import { useAuth } from "@/hooks/useAuth"
 
 export default function HomePage() {
   const currentYear = new Date().getFullYear()
   const navigate = useNavigate()
   const { setIsOpen, isOpen } = useAuthModal()
-
-  const logged = false
+  const { isAuthenticated } = useAuth();
 
   const handleJoinChat = () => {
-    if (logged) {
+    if (isAuthenticated) {
      return navigate('/rooms')
     }
 
