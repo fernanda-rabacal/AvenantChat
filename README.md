@@ -11,6 +11,7 @@
 - See chat rooms / Ver salas de chat
 - Enter a room / Entrar em uma sala
 - Send Message in a chat room / Mandar mensagens em uma sala de chat
+- Edit and delete your messages / Editar e deletar suas mensagens
 - See your chat rooms / Ver seus chats
 - See online members and their messages in a room / Ver membros online e as mensagens deles na sala
 
