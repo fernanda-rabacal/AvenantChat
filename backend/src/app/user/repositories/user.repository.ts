@@ -7,6 +7,7 @@ import { UpdateUserDto } from '../dto/update-user.dto';
 @Injectable()
 export class UserRepository {
   constructor(private readonly prisma: PrismaService) {}
+  private readonly systemEmail = process.env.SYSTEM_USER_EMAIL;
 
   async create(create_user_dto: CreateUserDto) {
     const user = this.prisma.user.create({
@@ -57,6 +58,11 @@ export class UserRepository {
     const userAsMember = await this.prisma.chatRoomMember.findMany({
       where: {
         id_user,
+        NOT: {
+          user: {
+            email: this.systemEmail,
+          }
+        },
       }
     });
 

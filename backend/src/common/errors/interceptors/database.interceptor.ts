@@ -15,18 +15,14 @@ export class DatabaseInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       catchError(error => {
-        //Verifico se é um erro prisma
         if (isPrismaError(error)) {
-          //capto a instancia do tipo do erro, se ele é especifico ou não
           error = handleDatabaseErrors(error);
         }
 
-        //se for um erro generico não especificado pelo codigo do prisma, lança esse
         if (error instanceof DatabaseError) {
           throw new BadRequestException(error.message);
         }
-
-        //lança o erro especifico
+        
         throw error;
       }),
     );

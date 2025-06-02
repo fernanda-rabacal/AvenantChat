@@ -44,4 +44,12 @@ export class ChatRoomService {
   async sendMessage(message_infos_props: ISendMessageProps) {
     return this.repository.sendMessage(message_infos_props)
   }
+
+  async editMessage(new_message: string, id_message: number) {
+    return this.repository.editMessage(new_message, id_message)
+  }
+
+  async deleteMessage(id_message: number) {
+    return this.repository.deleteMessage(id_message)
+  }
 }

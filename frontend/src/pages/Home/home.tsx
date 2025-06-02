@@ -1,33 +1,35 @@
 import { MessageCircle, ArrowRight } from "lucide-react"
+import { useNavigate } from "react-router-dom"
+
 import { Button } from "@/components/ui/button"
 import { Header } from "@/components/header"
 import { AuthModal } from "@/components/auth-modal"
 import { useAuthModal } from "@/hooks/useAuthModal"
-import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
 
 export default function HomePage() {
-  const currentYear = new Date().getFullYear()
-  const navigate = useNavigate()
-  const { setIsOpen, isOpen } = useAuthModal()
+  const currentYear = new Date().getFullYear();
+  const navigate = useNavigate();
+  const { setIsOpen, isOpen } = useAuthModal();
   const { isAuthenticated } = useAuth();
 
   const handleJoinChat = () => {
     if (isAuthenticated) {
-     return navigate('/rooms')
+     return navigate('/rooms');
     }
 
-    setIsOpen(true)
-  }
+    setIsOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-background/80 flex flex-col">
       <Header />
       <AuthModal isOpen={isOpen} setIsOpen={setIsOpen} />
+
       <main className="flex-1 flex flex-col items-center justify-center text-center px-4 relative overflow-hidden">
         <div className="max-w-3xl mx-auto relative z-10">
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-indigo-500">
-            Connect, Chat, Collaborate
+            Avenant
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto mb-8">
             Where conversations flow freely and communities thrive. Join thousands of users already connecting in
