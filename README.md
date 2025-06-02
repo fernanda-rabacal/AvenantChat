@@ -6,9 +6,12 @@
 
 #### Funcionalities / Funcionalidades:
 
+- Login on your account / Fazer login na sua conta
+- Register an account / Criar uma conta
 - See chat rooms / Ver salas de chat
 - Enter a room / Entrar em uma sala
 - Send Message in a chat room / Mandar mensagens em uma sala de chat
+- See your chat rooms / Ver seus chats
 - See online members and their messages in a room / Ver membros online e as mensagens deles na sala
 
 ### How to run the project / Como rodar o Projeto:
@@ -16,8 +19,12 @@
 🇺🇸 This repository has the frontend and the backend of the application. To run the project with Docker, you need to install it. Clone the repository to your computer and follow the steps to run the project with Docker. 
 To run this project without Docker, you need to have Node.js and npm installed. Also, you can connect to Postgres Database through Dbeaver. After you cloned the repository, enter in the respectives folders and see the steps below to run the code.
 
+#### IMPORTANT – This repository includes a .env.local file. Create a .env file based on this .env.local, and add a value for the variable SYSTEM_USER_PASSWORD (it can be any text you like) and a value for SECRET so that NestJWT can connect securely (this can also be any string, but It's highly recommended to use a long and complex value for the SECRET variable — similar to a strong password. Include uppercase and lowercase letters, numbers, and special characters to make it more secure (e.g., !f92JKl@#gPz8$!tRwZ). This helps protect your application's authentication system).
+
 🇧🇷 Este repositório contém o frontend e o backend da aplicação. Para rodar o projeto com Docker, é necessário tê-lo instalado. Clone o repositório no seu computador e siga os passos para rodar o projeto com Docker.
 Para rodar este projeto sem Docker, você precisa ter o Node.js e o npm instalados. Além disso, você pode se conectar ao banco Postgres pelo Dbeaver. Depois de clonar o repositório, entre nas pastas correspondentes e veja os passos abaixo para rodar o código.
+
+#### IMPORTANTE - Este repositório possui um arquivo '.env.local'. Crie um arquivo .env file baseado neste .env.local e adicione um valor à variavel SYSTEM_USER_PASSWORD (pode ser qualquer texto que você quiser) e um valor à SECRET para que o NestJWT possa conectar com segurança (também pode ser qualquer valor de string mas é altamente recomendado usar um valor longo e complexo para a variável SECRET — semelhante a uma senha forte. Inclua letras maiúsculas e minúsculas, números e caracteres especiais para torná-la mais segura (por exemplo: !f92JKl@#gPz8$!tRwZ). Isso ajuda a proteger o sistema de autenticação da sua aplicação.)
 
   #### Docker
 
@@ -28,10 +35,11 @@ Para rodar este projeto sem Docker, você precisa ter o Node.js e o npm instalad
 
   #### Backend
 
-  🇺🇸 Make sure to make a connection to Postgres using the credentials on the .env file. 
+  🇺🇸 Make sure to make a connection to Postgres using the credentials on the .env file. Also, change the DATABASE_URL value from 'db:5432' to 'localhost:5432' so that your server application can connect on the database.
   Enter the backend folder on terminal and run:
 
   🇧🇷 Certifique-se de fazer a conexão com o Postgres usando as credenciais do arquivo .env.
+  Além disso, altere o valor de DATABASE_URL de 'db:5432' para 'localhost:5432', para que sua aplicação possa se conectar ao banco de dados.
   Entre na pasta do backend pelo terminal e execute:
 
   ##### `npm install` to install the dependencies / para instalar as dependencias.
