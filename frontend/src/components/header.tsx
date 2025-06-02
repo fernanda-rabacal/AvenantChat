@@ -1,4 +1,4 @@
-import { MessageCircle } from "lucide-react";
+import { LogOut, MessageCircle } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 
 import { Button } from "./ui/button";
@@ -10,7 +10,7 @@ import { toast } from "sonner";
 
 export function Header() {
   const { setIsOpen, isOpen, isOpenLogout, setIsOpenLogout } = useAuthModal();
-  const { isAuthenticated, user, signOut } = useAuth();
+  const { isAuthenticated, signOut } = useAuth();
   const navigate = useNavigate();
 
   const handleConfirm = async () => {
@@ -34,8 +34,9 @@ export function Header() {
         {
           isAuthenticated ? (
             <div className="flex items-center gap-4">
+
               <Button size="sm" className="flex items-center gap-2" onClick={() => setIsOpenLogout(true)}>
-                {user?.name}
+                <LogOut /> Log out
               </Button>
               <ConfirmModal 
                 isOpen={isOpenLogout} 

@@ -96,10 +96,8 @@ export class ChatRoomRepository {
               }
             }
           },
-          include: {
-            ChatMessages: true
-          }
         },
+        ChatMessages: true
       }
     });
 
@@ -211,19 +209,15 @@ export class ChatRoomRepository {
         id_chat_room,
       },
       include: {
-        chat_room_member: {
-          include: {
-            user: {
-              select: {
-                id_user: true,
-                name: true,
-                email: true,
-                avatar_url: true,
-                is_online: true,
-                created_at: true
-              }
-            }
-          },
+        user: {
+          select: {
+            id_user: true,
+            name: true,
+            email: true,
+            avatar_url: true,
+            is_online: true,
+            created_at: true
+          } 
         },
       },
       take: limit
@@ -231,7 +225,7 @@ export class ChatRoomRepository {
 
     const formattedMessages = chatRoomMessages.map((msg) => ({
       ...msg,
-      user: msg.chat_room_member.user,
+      user: msg.user,
     }));
 
     return formattedMessages;
@@ -248,23 +242,35 @@ export class ChatRoomRepository {
         },
       },
       include: {
-        chat_room: true
+        chat_room: true,
+        user: {
+          select: {
+            id_user: true,
+            name: true,
+            email: true,
+            avatar_url: true,
+            is_online: true,
+            created_at: true
+          }
+        }
       }
     });
 
     const updatedUserRooms = await Promise.all(userRooms.map(async (room) => {
       const lastSentMessage = await this.prisma.chatMessages.findFirst({
         where: {
-          id_chat_room: room.id_chat_room
+          id_chat_room: room.chat_room.id_chat_room
         },
         orderBy: {
           sent_at: 'desc', 
         },
       })
+      const chatRoomMembers = await this.getChatRoomMembers(room.chat_room.id_chat_room)
 
       return {
         ...room.chat_room,
-        lastActivity: lastSentMessage ? lastSentMessage.sent_at : room.chat_room.created_at
+        members: chatRoomMembers,
+        last_activity: lastSentMessage ? lastSentMessage.sent_at : room.chat_room.created_at
       }
     }))
 
@@ -310,11 +316,62 @@ export class ChatRoomRepository {
       data: {
         content: message_infos_props.content,
         id_chat_room: message_infos_props.id_chat_room,
-        id_chat_room_member: chatMember.id_chat_room_member
+        id_user: chatMember.id_user
       }
     });
 
     return { ...newMessage, user: chatMember.user };
+  }
+
+  async editMessage(new_message: string, id_message: number) {
+    const newMessage = await this.prisma.chatMessages.update({
+      where: {
+        id_message
+      },
+      data: {
+        content: new_message,
+        edited_at: new Date()
+      },
+      include: {
+        user: {
+          select: {
+            id_user: true,
+            name: true,
+            email: true,
+            avatar_url: true,
+            is_online: true,
+            created_at: true
+          }
+        }
+      }
+    });
+
+    return newMessage;
+  }
+
+  async deleteMessage(id_message: number) {
+    const newMessage = await this.prisma.chatMessages.update({
+      where: {
+        id_message
+      },
+      data: {
+        is_deleted: true,
+      },
+      include: {
+        user: {
+          select: {
+            id_user: true,
+            name: true,
+            email: true,
+            avatar_url: true,
+            is_online: true,
+            created_at: true
+          }
+        }
+      }
+    });
+
+    return newMessage;
   }
 
   async join({ id_chat_room, id_user } : IJoinChatProps) {
@@ -330,9 +387,7 @@ export class ChatRoomRepository {
       }
     })
 
-    if (chatRoomsMember) {
-      throw new ConflictError('User is already on chat room')
-    }
+    if (chatRoomsMember) return;
 
     const newChatRoomMember = await this.prisma.chatRoomMember.create({
       data: {
@@ -370,9 +425,7 @@ export class ChatRoomRepository {
       }
     })
 
-    if (!chatRoomsMember) {
-      throw new ConflictError('User is already off chat room')
-    }
+    if (!chatRoomsMember) return;
 
     const removedChatRoomMember = await this.prisma.chatRoomMember.delete({
       where: {

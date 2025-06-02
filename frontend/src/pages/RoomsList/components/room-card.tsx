@@ -33,7 +33,7 @@ export function RoomCardItem({ room }: IRoomCardItemProps) {
   };
 
   return (
-    <Card key={room.id_chat_room} className="hover:shadow-lg transition-shadow cursor-pointer">
+    <Card className="hover:shadow-lg transition-shadow cursor-pointer sm:max-h-[12rem]">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg truncate">{room.name}</CardTitle>
       </CardHeader>

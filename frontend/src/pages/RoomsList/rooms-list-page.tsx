@@ -10,6 +10,7 @@ import { Header } from "@/components/header"
 import { RoomCardItem } from "./components/room-card"
 import { useChat } from "@/hooks/useChat"
 import { useMobile } from "@/hooks/useMobile"
+import { categories } from "@/data/categories"
 
 export default function ChatRoomsListPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -17,8 +18,6 @@ export default function ChatRoomsListPage() {
   const [showChatList, setShowChatList] = useState(true);
   const { rooms, getChatRooms } = useChat();
   const isMobile = useMobile();
-
-  const categories = ["All", ...Array.from(new Set(rooms.map((room) => room.category)))]
 
   const filteredRooms = rooms.filter((room) => {
     const matchesSearch =
@@ -92,21 +91,19 @@ export default function ChatRoomsListPage() {
             </div>
           </div>
         </div>
+        <div className="flex-1 overflow-y-auto custom-scroll p-3 mb-4 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {filteredRooms.map((room) => (
+            <RoomCardItem key={room.id_chat_room} room={room} />
+          ))}
+        </div>
 
-          <div className="flex-1 overflow-y-auto custom-scroll p-3 mb-4 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredRooms.map((room) => (
-              <RoomCardItem room={room} />
-            ))}
+        {filteredRooms.length === 0 && (
+          <div className="text-center py-12">
+            <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No chat rooms found</h3>
+            <p className="text-muted-foreground">Try adjusting your search terms or filters</p>
           </div>
-
-          {filteredRooms.length === 0 && (
-            <div className="text-center py-12">
-              <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No chat rooms found</h3>
-              <p className="text-muted-foreground">Try adjusting your search terms or filters</p>
-            </div>
-          )}
-        
+        )}
       </div>
     </main>
   )

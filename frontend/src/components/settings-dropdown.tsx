@@ -42,7 +42,7 @@ export function SettingsDropdown({ onEditName }: ISettingsDropdownProps) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTrigger asChild disabled>
         <Button variant="outline" size="icon">
           <Settings className="h-4 w-4" />
           <span className="sr-only">Open settings menu</span>

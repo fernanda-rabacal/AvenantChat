@@ -39,6 +39,8 @@ type ChatContextType = {
   enterChatRoom: (room: IChatRoom) => void;
   leaveChatRoom: (id: number) => void;
   sendMessage: (msg: string) => void;
+  editMessage: (id_message: number, message: string) => void;
+  deleteMessage: (id_message: number) => void;
 }
 
 export const ChatContext = createContext({} as ChatContextType);
@@ -99,6 +101,18 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
       id_chat_room: activeRoom?.id_chat_room,
       chat_room_name: activeRoom?.name
     });
+  }, [socketInstance, activeRoom]);
+
+  const editMessage = useCallback((id_message: number, message: string) => {
+    if (!id_message || !message || !activeRoom) return;
+
+    socketInstance?.emit("edit_message", { new_message: message, id_message });
+  }, [socketInstance, activeRoom]);
+
+  const deleteMessage = useCallback((id_message: number) => {
+    if (!id_message || !activeRoom) return;
+
+    socketInstance?.emit("delete_message", { id_message });
   }, [socketInstance, activeRoom]);
 
   const createChatRoom = useCallback(
@@ -174,6 +188,18 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
     });
 
     socketInstance.on("message", (msg: IChatMessage) => {
+      const messageIsEditedOrDeleted = msg.edited_at || msg.is_deleted;
+
+      if (messageIsEditedOrDeleted) {
+        return setMessages(prev => prev.map(m => {
+          if (m.id_message === msg.id_message) {
+            return msg;
+          }
+
+          return m;
+        }))
+      }
+
       setMessages((prev) => [...prev, msg]);
     });
 
@@ -238,7 +264,9 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
       sendMessage,
       getChatRooms,
       createChatRoom,
-      enterChatRoom
+      enterChatRoom,
+      editMessage,
+      deleteMessage
     }),
     [
       rooms, 
@@ -251,7 +279,9 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
       sendMessage, 
       getChatRooms, 
       createChatRoom,
-      enterChatRoom
+      enterChatRoom,
+      editMessage,
+      deleteMessage
     ]
   );
 
