@@ -6,7 +6,7 @@ export function manageError(error: unknown, function_origin_name: string, functi
   console.error(`${function_origin_name} error >> `, error);
 
   if (axios.isAxiosError(error)) {
-    toast.error(error.response?.data.message);
+    if (error.code === 'ERR_NETWORK' && function_origin_name === 'getUserByToken') return;
 
     if (error.response?.status === 401) {
       const cookies = parseCookies();
@@ -17,7 +17,7 @@ export function manageError(error: unknown, function_origin_name: string, functi
         }
       }
     }
-  }
 
-  toast.error(`Unexpected error while ${function_goal}`);
+    toast.error(error.response?.data.message || `Unexpected error while ${function_goal}`);
+  }
 }

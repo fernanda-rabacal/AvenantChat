@@ -6,6 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { ISendMessageProps, IJoinChatProps, ILeaveChatProps, IUser } from 'src/@types/interfaces';
 import { ConflictError } from 'src/common/errors/types/ConflictError';
 import { encryptData } from 'src/util/crypt';
+import { SystemError } from 'src/common/errors/types/SystemError';
 
 @Injectable()
 export class ChatRoomRepository {
@@ -15,7 +16,7 @@ export class ChatRoomRepository {
   async create(create_chat_room_dto: CreateChatRoomDto) {
     const systemUserPass = await encryptData(process.env.SYSTEM_USER_PASSWORD);
 
-    const chatRoom = await this.prisma.chatRoom.create({
+    const newChatRoom = await this.prisma.chatRoom.create({
       data: {
         name: create_chat_room_dto.name,
         category: create_chat_room_dto.category,
@@ -34,16 +35,16 @@ export class ChatRoomRepository {
       },
     });
 
-    const newRoom = await this.prisma.chatRoomMember.create({
+    await this.prisma.chatRoomMember.create({
       data: {
-        id_chat_room: chatRoom.id_chat_room,
+        id_chat_room: newChatRoom.id_chat_room,
         id_user: systemUser.id_user,
       },
     });
 
     return {
-      rooms: this.prisma.chatRoom.findMany(),
-      created_room: newRoom
+      rooms: await this.prisma.chatRoom.findMany(),
+      created_room: newChatRoom
     };
   }
 
@@ -53,7 +54,12 @@ export class ChatRoomRepository {
     chatRooms = await Promise.all(chatRooms.map(async chatRoom => {
       const membersCount = await this.prisma.chatRoomMember.count({
         where: {
-          id_chat_room: chatRoom.id_chat_room
+          id_chat_room: chatRoom.id_chat_room,
+          NOT: {
+          user: {
+            email: this.systemEmail,
+          }
+        },
         }
       })
 
@@ -69,7 +75,7 @@ export class ChatRoomRepository {
       return {
         ...chatRoom,
         members_count: membersCount,
-        last_activity: lastSentMessage.sent_at
+        last_activity: lastSentMessage ? lastSentMessage.sent_at : chatRoom.created_at
       }
     }))
 
@@ -83,12 +89,21 @@ export class ChatRoomRepository {
       },
       include: {
         ChatRoomMembers: {
+          where: {
+            NOT: {
+              user: {
+                email: this.systemEmail,
+              }
+            }
+          },
           include: {
             ChatMessages: true
           }
         },
       }
     });
+
+    if (!chatRoom) return;
 
     const members = await this.prisma.chatRoomMember.findMany({
       where: {
@@ -125,7 +140,7 @@ export class ChatRoomRepository {
     const chatRoomUpdated = {
       ...chatRoom,
       members_count: members.length,
-      last_activity: lastSentMessage?.sent_at
+      last_activity: lastSentMessage ? lastSentMessage.sent_at : chatRoom.created_at
     }
 
     return {
@@ -140,6 +155,8 @@ export class ChatRoomRepository {
         email: this.systemEmail
       }
     });
+
+    if (!systemUser) throw new SystemError("It was an error during getSystemChatMember function")
 
     return this.prisma.chatRoomMember.findFirst({
       where: {
@@ -224,6 +241,14 @@ export class ChatRoomRepository {
     const userRooms = await this.prisma.chatRoomMember.findMany({
       where: {
         id_user,
+        NOT: {
+          user: {
+            email: this.systemEmail,
+          }
+        },
+      },
+      include: {
+        chat_room: true
       }
     });
 
@@ -238,8 +263,8 @@ export class ChatRoomRepository {
       })
 
       return {
-        ...room,
-        lastActivity: lastSentMessage.sent_at
+        ...room.chat_room,
+        lastActivity: lastSentMessage ? lastSentMessage.sent_at : room.chat_room.created_at
       }
     }))
 
@@ -256,6 +281,11 @@ export class ChatRoomRepository {
         where: {
           id_user: message_infos_props.id_user,
           id_chat_room: message_infos_props.id_chat_room,
+          NOT: {
+          user: {
+            email: this.systemEmail,
+          }
+        },
         },
         include: {
           user: {
@@ -270,10 +300,10 @@ export class ChatRoomRepository {
           }
         }
       });
-    }
 
-    if (!chatMember) {
-      throw new ConflictError("User doesn't belong in this room.");
+      if (!chatMember) {
+        throw new ConflictError("User doesn't belong in this room.");
+      }
     }
 
     const newMessage = await this.prisma.chatMessages.create({
@@ -291,7 +321,12 @@ export class ChatRoomRepository {
     const chatRoomsMember = await this.prisma.chatRoomMember.findFirst({
       where: {
         id_chat_room,
-        id_user
+        id_user,
+        NOT: {
+          user: {
+            email: this.systemEmail,
+          }
+        },
       }
     })
 
@@ -326,7 +361,12 @@ export class ChatRoomRepository {
    const chatRoomsMember = await this.prisma.chatRoomMember.findFirst({
       where: {
         id_chat_room,
-        id_user
+        id_user,
+        NOT: {
+          user: {
+            email: this.systemEmail,
+          }
+        },
       }
     })
 

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react"
-import { Send, Search, MessageCircle } from "lucide-react"
+import { Send, Search, MessageCircle, MessageCircleX } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import type { z } from "zod"
@@ -21,15 +21,19 @@ import { sendMessageSchema } from "@/utils/validationSchemas"
 import { verifyShoudGroupMessage } from "@/utils/verifyShouldGroupMessage"
 import { useMobile } from "@/hooks/useMobile" 
 import { useChat } from "@/hooks/useChat"
+import { useNavigate } from "react-router-dom"
+import { ConfirmModal } from "@/components/confirm-modal"
 
 type SendMessageFormData = z.infer<typeof sendMessageSchema>;
 
 export default function ChatRoom() {
   const [showMembers, setShowMembers] = useState(true);
   const [showChatList, setShowChatList] = useState(true);
+  const [openConfirmLeaveChatModal, setOpenConfirmLeaveChatModal] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobile = useMobile();
-  const { messages, sendMessage, activeRoom } = useChat();
+  const navigate = useNavigate();
+  const { messages, sendMessage, activeRoom, leaveChatRoom } = useChat();
   const { 
       register,
       handleSubmit,
@@ -63,6 +67,13 @@ export default function ChatRoom() {
     }
   };
 
+  const handleLeaveChat = async () => {
+    if (!activeRoom) return;
+
+    leaveChatRoom(activeRoom.id_chat_room);
+    navigate('/rooms');
+  };
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages]);
@@ -92,18 +103,34 @@ export default function ChatRoom() {
             <h3 className="font-semibold">{activeRoom?.name}</h3>
           </div>
 
-          <div className="flex items-center space-x-1">
+          <div className="flex items-center space-x-6">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Search size={18} />
-                  </Button>
+                  <Search size={24} className="cursor-pointer" />
                 </TooltipTrigger>
                 <TooltipContent>Search</TooltipContent>
               </Tooltip>
             </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild onClick={() => setOpenConfirmLeaveChatModal(true)}>
+                  <MessageCircleX size={24}  className="cursor-pointer" />
+                </TooltipTrigger>
+                <TooltipContent>Leave Chat</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
+
+          <ConfirmModal 
+            isOpen={openConfirmLeaveChatModal}
+            setIsOpen={setOpenConfirmLeaveChatModal}
+            title={`Confirm Leave ${activeRoom?.name} Chat`}
+            description="Are you sure you want to leave the chat? You will need to rejoin th chat again to access."
+            buttonLoadingTitle="Leaving..." 
+            buttonConfirmTitle="Leave Chat"
+            onConfirm={handleLeaveChat}           
+            />
         </div>
 
         <ScrollArea className="flex-1 p-4 h-[75%]">

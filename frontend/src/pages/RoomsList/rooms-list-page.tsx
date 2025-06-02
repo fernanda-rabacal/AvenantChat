@@ -54,10 +54,10 @@ export default function ChatRoomsListPage() {
         toggleUserChatList={toggleUserChatList}
         />
         
-      <div className="flex-1 pr-12">
+      <div className="flex-1 pr-12 max-h-screen flex flex-col justify-between">
         <Header />
 
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-4">
           <div className="mb-8 flex items-center justify-between">
             <div>
               <h1 className="text-4xl font-bold mb-2">Chat Rooms</h1>
@@ -67,7 +67,7 @@ export default function ChatRoomsListPage() {
             <CreateRoomModal />
           </div>
 
-          <div className="mb-8 space-y-4">
+          <div className="mb-4 space-y-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
@@ -91,8 +91,9 @@ export default function ChatRoomsListPage() {
               ))}
             </div>
           </div>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="flex-1 overflow-y-auto custom-scroll p-3 mb-4 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredRooms.map((room) => (
               <RoomCardItem room={room} />
             ))}
@@ -105,7 +106,7 @@ export default function ChatRoomsListPage() {
               <p className="text-muted-foreground">Try adjusting your search terms or filters</p>
             </div>
           )}
-        </div>
+        
       </div>
     </main>
   )
