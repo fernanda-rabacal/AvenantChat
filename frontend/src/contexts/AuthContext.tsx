@@ -91,7 +91,7 @@ export function AuthContextProvider({ children } : IAuthProps) {
       setUser(user);
       return true;
     } catch(err: unknown) {
-      manageError(err, 'getUserByToken', 'getting user by token');
+      console.error('error in getUserByToken >> ', err);
       return false;
     }
   };
