@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LogOut } from "lucide-react";
+import { CircleAlertIcon, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -14,7 +14,7 @@ interface IConfirmModalProps {
   isOpen: boolean;
   setIsOpen: (value: boolean) => void;
   title: string;
-  description: string;
+  description?: string;
   buttonLoadingTitle: string;
   buttonConfirmTitle: string;
   onConfirm: () => void;
@@ -41,8 +41,8 @@ export function ConfirmModal({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <LogOut className="h-5 w-5 text-muted-foreground" />
+          <DialogTitle className="flex items-center gap-6">
+            <CircleAlertIcon />
             {title}
           </DialogTitle>
           <DialogDescription>

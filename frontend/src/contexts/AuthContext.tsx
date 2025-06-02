@@ -66,9 +66,7 @@ export function AuthContextProvider({ children } : IAuthProps) {
       const response = await api.post('/login', data);
       const { token } = response.data;
       
-      await getUserByToken(token);
-
-      return true;
+      return getUserByToken(token);
     } catch (err: unknown) {
       manageError(err, 'signIn', 'sign user in');
 
@@ -91,8 +89,10 @@ export function AuthContextProvider({ children } : IAuthProps) {
 
       setAuthInterceptor(user.id_user);
       setUser(user);
+      return true;
     } catch(err: unknown) {
       manageError(err, 'getUserByToken', 'getting user by token');
+      return false;
     }
   };
 

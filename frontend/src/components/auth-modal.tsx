@@ -18,7 +18,7 @@ import {
 import { toast } from "sonner" 
 import { loginFormSchema, registerFormSchema } from "@/utils/validationSchemas"
 import { useAuth } from "@/hooks/useAuth"
-import type { LoginData, RegisterData } from "@/@types/auth"
+import type { ILoginData, IRegisterData } from "@/@types/auth"
 interface IAuthModalProps {
   isOpen: boolean
   setIsOpen: (value: boolean) => void
@@ -47,13 +47,13 @@ export function AuthModal({ isOpen, setIsOpen }: IAuthModalProps) {
     formState: { errors, isSubmitting }
   } = form;
 
-  const handleAuth = async (data: LoginData | RegisterData) => {
+  const handleAuth = async (data: ILoginData | IRegisterData) => {
     let hasSuccesfullAuth;
 
     if (authMode === 'login') {
       hasSuccesfullAuth = await signIn(data)
     } else if (authMode === 'register') {
-      hasSuccesfullAuth = await signUp(data as RegisterData)
+      hasSuccesfullAuth = await signUp(data as IRegisterData)
     }
 
     if (hasSuccesfullAuth) {
@@ -96,7 +96,7 @@ export function AuthModal({ isOpen, setIsOpen }: IAuthModalProps) {
                 type="text"
                 placeholder="Enter your full name"
                 disabled={isSubmitting}
-                error={(errors as FieldErrors<RegisterData>).name?.message}
+                error={(errors as FieldErrors<IRegisterData>).name?.message}
                 {...register("name")}
               />
             </div>
@@ -144,7 +144,7 @@ export function AuthModal({ isOpen, setIsOpen }: IAuthModalProps) {
                   type={"password"}
                   placeholder="Confirm your password"
                   disabled={isSubmitting}
-                  error={(errors as FieldErrors<RegisterData>).confirm_password?.message}
+                  error={(errors as FieldErrors<IRegisterData>).confirm_password?.message}
                   {...register("confirm_password")}
                 />
             </div>

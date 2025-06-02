@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react"
-import { Send, Search, MessageCircle, MessageCircleX } from "lucide-react"
+import { useNavigate } from "react-router-dom"
+import { Send, MessageCircle, MessageCircleX } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import type { z } from "zod"
@@ -12,7 +13,6 @@ import {
 } from "@/components/ui/tooltip"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { UserChatList } from "@/components/user-chat-list-component"
 import { ChatMembersList } from "./components/chat-members-list-component" 
 import { ChatMessageItem } from "./components/chat-message"
@@ -21,7 +21,6 @@ import { sendMessageSchema } from "@/utils/validationSchemas"
 import { verifyShoudGroupMessage } from "@/utils/verifyShouldGroupMessage"
 import { useMobile } from "@/hooks/useMobile" 
 import { useChat } from "@/hooks/useChat"
-import { useNavigate } from "react-router-dom"
 import { ConfirmModal } from "@/components/confirm-modal"
 
 type SendMessageFormData = z.infer<typeof sendMessageSchema>;
@@ -89,14 +88,14 @@ export default function ChatRoom() {
   }, [isMobile]);
 
   return (
-    <main className="flex h-screen bg-background">
+    <main className="flex h-screen w-screen bg-background">
       <UserChatList 
         showChatList={showChatList}
         isMobile={isMobile}
         toggleUserChatList={toggleUserChatList}
       />
 
-      <section className="flex-1 flex flex-col min-w-0">
+      <section className="flex-1 h-screen flex flex-col min-w-0">
         <div className="h-14 border-b flex items-center justify-between px-4 bg-background">
           <div className="flex items-center">
             <MessageCircle size={20} className="mr-2 text-muted-foreground" />
@@ -104,14 +103,6 @@ export default function ChatRoom() {
           </div>
 
           <div className="flex items-center space-x-6">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Search size={24} className="cursor-pointer" />
-                </TooltipTrigger>
-                <TooltipContent>Search</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild onClick={() => setOpenConfirmLeaveChatModal(true)}>
@@ -126,15 +117,14 @@ export default function ChatRoom() {
             isOpen={openConfirmLeaveChatModal}
             setIsOpen={setOpenConfirmLeaveChatModal}
             title={`Confirm Leave ${activeRoom?.name} Chat`}
-            description="Are you sure you want to leave the chat? You will need to rejoin th chat again to access."
+            description="Are you sure you want to leave the chat? You will need to rejoin this chat again to access it"
             buttonLoadingTitle="Leaving..." 
             buttonConfirmTitle="Leave Chat"
             onConfirm={handleLeaveChat}           
             />
         </div>
 
-        <ScrollArea className="flex-1 p-4 h-[75%]">
-          <div>
+        <div className="flex-1 p-4 overflow-y-auto custom-scroll">
             {messages.map((message, index) => {
               const { shouldGroup, isLastMessage } = verifyShoudGroupMessage(message, index, messages);
 
@@ -148,9 +138,8 @@ export default function ChatRoom() {
                 />
               );
             })}
-            <div ref={messagesEndRef} />
-          </div>
-        </ScrollArea>
+            <div ref={messagesEndRef} className="w-0 h-0"/>
+        </div>
 
         <div className="p-4 border-t">
           <form onSubmit={handleSubmit(handleSendMessage)} className="flex items-center space-x-2">
