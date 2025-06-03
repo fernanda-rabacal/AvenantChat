@@ -1,65 +1,188 @@
 # Avenant Chat App
 
-🇺🇸 This is a full stack project of a chat web app where you can contact your friend in real time, see available chat rooms and enter as many rooms as you like. This project is made with Reactjs and Nest.js, also using Sass and Prisma, Postgres database and Docker. Any issues you find, feel free to create an issue on this repository!
+<div align="center">
+  <img src="https://img.shields.io/badge/status-active-success.svg" alt="Status">
+  <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License">
+</div>
 
-🇧🇷 Este é um projeto Full Stack de uma aplicação web de Chat onde você pode contactar seus amigos em tempo real, ver salas de chat disponíveis e entrar em quantas salas você quiser. Este projeto foi feito com Reactjs e Nest.js, também usando Sass e Prisma, o banco de dados Postgres e Docker. Qualquer problema que você encontrar, sinta-se à vontade para criar uma issue neste repositório!
+## 📌 Overview | Visão Geral
 
-#### Funcionalities / Funcionalidades:
+🇺🇸 **English**  
+A full-stack real-time chat application built with modern technologies. This application enables users to communicate in real-time, manage chat rooms, and interact with other users in a seamless experience.
 
-- Login on your account / Fazer login na sua conta
-- Register an account / Criar uma conta
-- See chat rooms / Ver salas de chat
-- Enter a room / Entrar em uma sala
-- Send Message in a chat room / Mandar mensagens em uma sala de chat
-- Edit and delete your messages / Editar e deletar suas mensagens
-- See your chat rooms / Ver seus chats
-- See online members and their messages in a room / Ver membros online e as mensagens deles na sala
+🇧🇷 **Português**  
+Uma aplicação full-stack de chat em tempo real construída com tecnologias modernas. Esta aplicação permite que os usuários se comuniquem em tempo real, gerenciem salas de chat e interajam com outros usuários de forma integrada.
 
-#
+## ✨ Features | Funcionalidades
 
-### How to run the project / Como rodar o Projeto:
+### User Management | Gestão de Usuários
+- 🔐 User Registration and Authentication | Registro e Autenticação de Usuários
+- 👤 User Profile Management | Gerenciamento de Perfil de Usuário
+- 🔑 Secure Login System | Sistema de Login Seguro
 
-🇺🇸 This repository has the frontend and the backend of the application. To run the project with Docker, you need to install it. Clone the repository to your computer and follow the steps to run the project with Docker. 
-To run this project without Docker, you need to have Node.js and npm installed. Also, you can connect to Postgres Database through Dbeaver. After you cloned the repository, enter in the respectives folders and see the steps below to run the code.
+### Chat Functionality | Funcionalidades do Chat
+- 💬 Real-time Messaging | Mensagens em Tempo Real
+- 🗑️ Edit/Delete Messages | Editar/Deletar Mensagens
+- 👥 View Online Users | Visualizar Usuários Online
+- 🏠 Multiple Chat Rooms | Múltiplas Salas de Chat
+- 📝 Message History | Histórico de Mensagens
 
-IMPORTANT – This repository includes a .env.local file. Create a .env file based on this .env.local, and add a value for the variable SYSTEM_USER_PASSWORD (it can be any text you like) and a value for SECRET so that NestJWT can connect securely (this can also be any string, but It's highly recommended to use a long and complex value for the SECRET variable — similar to a strong password. Include uppercase and lowercase letters, numbers, and special characters to make it more secure (e.g., !f92JKl@#gPz8$!tRwZ). This helps protect your application's authentication system).
+### Room Management | Gestão de Salas
+- 🔍 Browse Available Rooms | Navegar por Salas Disponíveis
+- ➕ Join Multiple Rooms | Entrar em Múltiplas Salas
+- 👀 View Room Participants | Visualizar Participantes da Sala
 
-#
+## 📁 Project Structure | Estrutura do Projeto
 
-🇧🇷 Este repositório contém o frontend e o backend da aplicação. Para rodar o projeto com Docker, é necessário tê-lo instalado. Clone o repositório no seu computador e siga os passos para rodar o projeto com Docker.
-Para rodar este projeto sem Docker, você precisa ter o Node.js e o npm instalados. Além disso, você pode se conectar ao banco Postgres pelo Dbeaver. Depois de clonar o repositório, entre nas pastas correspondentes e veja os passos abaixo para rodar o código.
+```
+avenant_chat/
+├── .docker/                # Docker configuration files
+├── .github/                # GitHub workflows and configuration
+├── backend/               
+│   ├── src/               # Backend source code
+│   ├── prisma/            # Database schema and migrations
+│   ├── test/              # Backend tests
+│   ├── dist/              # Compiled backend code
+│   └── generated/         # Generated Prisma client
+├── frontend/
+│   ├── src/               # Frontend source code
+│   ├── public/            # Static files
+│   └── components.json    # UI components configuration
+├── docker-compose.yml     # Docker compose configuration
+└── README.md             # Project documentation
+```
 
-IMPORTANTE - Este repositório possui um arquivo '.env.local'. Crie um arquivo .env file baseado neste .env.local e adicione um valor à variavel SYSTEM_USER_PASSWORD (pode ser qualquer texto que você quiser) e um valor à SECRET para que o NestJWT possa conectar com segurança (também pode ser qualquer valor de string mas é altamente recomendado usar um valor longo e complexo para a variável SECRET — semelhante a uma senha forte. Inclua letras maiúsculas e minúsculas, números e caracteres especiais para torná-la mais segura (por exemplo: !f92JKl@#gPz8$!tRwZ). Isso ajuda a proteger o sistema de autenticação da sua aplicação.)
+### Key Directories | Diretórios Principais
 
-  #### Docker
+#### Backend Structure
+- `backend/src/` - Main application code
+- `backend/prisma/` - Database schema and migrations
+- `backend/test/` - Unit and integration tests
+- `backend/generated/` - Auto-generated Prisma client code
 
-  🇺🇸 On the root folder terminal, run `docker compose build` to build the containers. After, just run `docker compose up` to start the containers. If you like, use the flag `-d` on this command to detach the docker log off the terminal.
+#### Frontend Structure
+- `frontend/src/` - React components and application logic
+- `frontend/public/` - Static assets and public files
+- `frontend/components.json` - UI component configurations
 
-  🇧🇷 Na pasta raiz, execute `docker-compose build` no terminal para construir os containers. Depois, basta executar `docker-compose up` para iniciar os containers. Se preferir, use a flag -d junto nesse comando para desacoplar os logs do Docker do terminal.
+#### Infrastructure
+- `.docker/` - Docker configuration and setup files
+- `.github/` - CI/CD workflows and GitHub configurations
 
+## 🛠️ Technical Stack | Stack Técnica
 
-  #### Backend
+### Frontend
+- **React.js** - UI Framework
+- **TypeScript** - Programming Language
+- **Tailwind CSS** - Styling
+- **Socket.io Client** - Real-time Communication
 
-  🇺🇸 Make sure to make a connection to Postgres using the credentials on the .env file. Also, change the DATABASE_URL value from 'db:5432' to 'localhost:5432' so that your server application can connect on the database.
-  Enter the backend folder on terminal and run:
+### Backend
+- **Nest.js** - Server Framework
+- **Prisma** - ORM
+- **PostgreSQL** - Database
+- **Socket.io** - WebSocket Implementation
 
-  🇧🇷 Certifique-se de fazer a conexão com o Postgres usando as credenciais do arquivo .env.
-  Além disso, altere o valor de DATABASE_URL de 'db:5432' para 'localhost:5432', para que sua aplicação possa se conectar ao banco de dados.
-  Entre na pasta do backend pelo terminal e execute:
+### Infrastructure
+- **Docker** - Containerization
+- **Docker Compose** - Container Orchestration
 
-  ##### `npm install` to install the dependencies / para instalar as dependencias.
-  ##### `npx prisma migrate dev` to make the database / para criar o banco de dados.
-  ##### `npm start` to start the server on http://localhost:8080 / para iniciar o servidor na URL http://localhost:8080
+## 🚀 Getting Started | Começando
 
+### Prerequisites | Pré-requisitos
 
-  #### Frontend
+- Node.js (v14 or higher)
+- npm or yarn
+- Docker and Docker Compose (for containerized setup)
+- PostgreSQL (for local setup)
 
-  🇺🇸 Enter the frontend folder on CMD and just run `npm run dev`.
-  
-  🇧🇷 Entre na pasta frontend pelo terminal e simplesmente rode o comando `npm run dev`.
+### Environment Setup | Configuração do Ambiente
 
-  
-### Technologies / Tecnologias 🧰
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/avenant_chat.git
+cd avenant_chat
+```
+
+2. Environment Variables | Variáveis de Ambiente:
+Create a `.env` file based on `.env.local` and configure:
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/dbname"
+SYSTEM_USER_PASSWORD="your_system_password"
+SECRET="your_jwt_secret_key"
+```
+
+### Installation Methods | Métodos de Instalação
+
+#### 🐳 Using Docker | Usando Docker
+
+Change your `DATABASE_URL` on your `.env` file to:
+```env
+DATABASE_URL="postgresql://user:password@db:5432/dbname"
+```
+
+1. Build the containers:
+```bash
+docker compose build
+```
+
+2. Start the application:
+```bash
+docker compose up -d
+```
+
+#### 💻 Manual Setup | Configuração Manual
+
+1. Backend Setup:
+```bash
+cd backend
+npm install
+npx prisma migrate dev
+npm start
+```
+
+2. Frontend Setup:
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### 🌐 Access the Application | Acessar a Aplicação
+
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:8080
+
+## 📚 API Documentation | Documentação da API
+
+The API documentation is available at:
+- Swagger UI: http://localhost:8080/api-docs
+
+## 🧪 Testing | Testes
+
+```bash
+# Run backend tests
+cd backend && npm test
+
+# Run frontend tests
+cd frontend && npm test
+```
+
+## 🤝 Contributing | Contribuindo
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📝 License | Licença
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🔧 Technologies | Tecnologias
 
 <div>
   <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white"> 
