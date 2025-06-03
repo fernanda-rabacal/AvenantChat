@@ -16,7 +16,7 @@ export const createSocketInstance = (userId: string | number): Socket => {
     room = JSON.parse(savedActiveRoom);
   }
 
-  return io("http://localhost:8080/chat-room", {
+  return io(`${process.env.NEXT_PUBLIC_API_URL}/chat-room`, {
     autoConnect: false,
     withCredentials: true,
     transports: ["websocket"],
