@@ -34,6 +34,7 @@ export function UserChatList({ showChatList, isMobile, toggleUserChatList }: IUs
 
   const handleEnterChat = (room: IChatRoom) => {
     enterChatRoom(room)
+    toggleUserChatList()
 
     if (!isChatRoom) {
       navigate('/rooms/chat')

@@ -132,7 +132,7 @@ export function ChatMessageItem({
       )}
       >
       {messageContent}
-      <div className={cn("hidden", (showEditButton || isDropdownOpen) ? "block" : "hidden")}>
+      <div className={cn("invisible", (showEditButton || isDropdownOpen) ? "visible" : "invisible")}>
         <MessageDropdown 
           onEdit={handleEdit} 
           onDelete={handleDelete}

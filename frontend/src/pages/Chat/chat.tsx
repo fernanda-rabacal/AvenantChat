@@ -4,6 +4,7 @@ import { Send, MessageCircle, MessageCircleX } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import type { z } from "zod"
+import type { IChatMessage } from "@/@types/interfaces"
 
 import { 
   Tooltip, 
@@ -31,6 +32,7 @@ export default function ChatRoom() {
   const [openConfirmLeaveChatModal, setOpenConfirmLeaveChatModal] = useState(false);
   const [isAtTop, setIsAtTop] = useState(false);
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
+  const [olderMessages, setOlderMessages] = useState<IChatMessage[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const isMobile = useMobile();
@@ -88,9 +90,22 @@ export default function ChatRoom() {
   const handleLoadMore = async () => {
     const container = messagesContainerRef.current;
     if (!container) return;
+
+    // Save current viewport state
+    const firstChild = container.firstElementChild as HTMLElement;
+    const initialHeight = firstChild?.offsetTop || 0;
     
     setShouldScrollToBottom(false);
     await loadMoreMessages();
+
+    // After loading, restore viewport position
+    requestAnimationFrame(() => {
+      if (container && firstChild) {
+        const newHeight = firstChild.offsetTop;
+        const scrollOffset = newHeight - initialHeight;
+        container.scrollTop += scrollOffset;
+      }
+    });
   };
 
   const handleScroll = () => {
@@ -99,6 +114,7 @@ export default function ChatRoom() {
 
     setIsAtTop(container.scrollTop === 0);
     
+    // Check if we're near bottom to enable auto-scroll
     const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
     setShouldScrollToBottom(isNearBottom);
   };
@@ -117,6 +133,7 @@ export default function ChatRoom() {
     }
   }, [messages, shouldScrollToBottom]);
 
+  // Reset scroll behavior when changing rooms
   useEffect(() => {
     setShouldScrollToBottom(true);
   }, [activeRoom]);
@@ -130,6 +147,10 @@ export default function ChatRoom() {
       setShowChatList(true)
     }
   }, [isMobile]);
+
+  useEffect(() => {
+    setOlderMessages([]);
+  }, [activeRoom]);
 
   return (
     <main className="flex h-screen w-screen bg-background">
@@ -189,20 +210,36 @@ export default function ChatRoom() {
             </div>
           )}
 
-          {messages.map((message, index) => {
-            const { shouldGroup, isLastMessage } = verifyShoudGroupMessage(message, index, messages);
+          <div className="older-messages">
+            {olderMessages.map((message, index) => {
+              const { shouldGroup } = verifyShoudGroupMessage(message, index, olderMessages);
+              return (
+                <ChatMessageItem
+                  key={message.id_message}
+                  message={message}
+                  shouldGroup={shouldGroup}
+                  isLastMessage={false}
+                  className="message-item"
+                />
+              );
+            })}
+          </div>
 
-            return (
-              <ChatMessageItem
-                key={message.id_message}
-                message={message}
-                shouldGroup={shouldGroup}
-                isLastMessage={isLastMessage}
-                messagesEndRef={messagesEndRef}
-                className="message-item"
-              />
-            );
-          })}
+          <div className="current-messages">
+            {messages.map((message, index) => {
+              const { shouldGroup, isLastMessage } = verifyShoudGroupMessage(message, index, messages);
+              return (
+                <ChatMessageItem
+                  key={message.id_message}
+                  message={message}
+                  shouldGroup={shouldGroup}
+                  isLastMessage={isLastMessage}
+                  messagesEndRef={messagesEndRef}
+                  className="message-item"
+                />
+              );
+            })}
+          </div>
           <div ref={messagesEndRef} className="w-0 h-0"/>
         </div>
 

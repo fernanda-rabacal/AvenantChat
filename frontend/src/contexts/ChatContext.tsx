@@ -43,7 +43,7 @@ type ChatContextType = {
   sendMessage: (msg: string) => void;
   editMessage: (id_message: number, message: string) => void;
   deleteMessage: (id_message: number) => void;
-  loadMoreMessages: () => Promise<void>;
+  loadMoreMessages: () => Promise<{ messages: IChatMessage[]; hasMore: boolean } | undefined>;
 }
 
 export const ChatContext = createContext({} as ChatContextType);
@@ -176,6 +176,18 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
       socketInstance?.emit('load_more_messages', { 
         id_chat_room: activeRoom.id_chat_room,
         page: nextPage 
+      });
+
+      return new Promise<{ messages: IChatMessage[]; hasMore: boolean }>((resolve) => {
+        const handleMoreMessages = (data: { messages: IChatMessage[]; hasMore: boolean }) => {
+          setHasMoreMessages(data.hasMore);
+          setCurrentPage(prev => prev + 1);
+          setIsLoadingMoreMessages(false);
+          socketInstance?.off('more_messages', handleMoreMessages);
+          resolve(data);
+        };
+
+        socketInstance?.on('more_messages', handleMoreMessages);
       });
     } catch (err: unknown) {
       manageError(err, 'loadMoreMessages', 'loading more messages');
