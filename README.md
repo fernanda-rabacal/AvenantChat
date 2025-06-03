@@ -13,6 +13,8 @@ A full-stack real-time chat application built with modern technologies. This app
 🇧🇷 **Português**  
 Uma aplicação full-stack de chat em tempo real construída com tecnologias modernas. Esta aplicação permite que os usuários se comuniquem em tempo real, gerenciem salas de chat e interajam com outros usuários de forma integrada.
 
+##### You can access the website here: https://avenant-chat.vercel.app/
+
 ## ✨ Features | Funcionalidades
 
 ### User Management | Gestão de Usuários
