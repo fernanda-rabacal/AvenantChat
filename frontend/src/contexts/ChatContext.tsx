@@ -33,6 +33,8 @@ type ChatContextType = {
   chatRoomMembers: IChatMember[];
   messages: IChatMessage[];
   activeRoom: IChatRoom | null;
+  hasMoreMessages: boolean;
+  isLoadingMoreMessages: boolean;
   getChatRooms: () => void;
   createChatRoom: (data: ICreateRoomDataProps) => void;
   joinChatRoom: (room: IChatRoom) => void;
@@ -41,6 +43,7 @@ type ChatContextType = {
   sendMessage: (msg: string) => void;
   editMessage: (id_message: number, message: string) => void;
   deleteMessage: (id_message: number) => void;
+  loadMoreMessages: () => Promise<void>;
 }
 
 export const ChatContext = createContext({} as ChatContextType);
@@ -52,6 +55,9 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
   const [userRooms, setUserRooms] = useState<IChatRoom[]>([]);
   const [messages, setMessages] = useState<IChatMessage[]>([]);
   const [socketInstance, setSocketInstance] = useState<Socket | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMoreMessages, setHasMoreMessages] = useState(false);
+  const [isLoadingMoreMessages, setIsLoadingMoreMessages] = useState(false);
   const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
@@ -160,6 +166,22 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
     }
   }, [api]);
 
+  const loadMoreMessages = useCallback(async () => {
+    if (!activeRoom || isLoadingMoreMessages) return;
+
+    try {
+      setIsLoadingMoreMessages(true);
+      const nextPage = currentPage + 1;
+      
+      socketInstance?.emit('load_more_messages', { 
+        id_chat_room: activeRoom.id_chat_room,
+        page: nextPage 
+      });
+    } catch (err: unknown) {
+      manageError(err, 'loadMoreMessages', 'loading more messages');
+      setIsLoadingMoreMessages(false);
+    }
+  }, [activeRoom, currentPage, isLoadingMoreMessages, socketInstance]);
 
   useEffect(() => {
     if (!socketInstance || !user) return;
@@ -169,6 +191,7 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
     socketInstance.off("chat_room_members_list");
     socketInstance.off("message");
     socketInstance.off("saved_messages");
+    socketInstance.off("more_messages");
     socketInstance.off("joined_room");
 
     socketInstance.on("connect", () => {
@@ -205,6 +228,15 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
 
     socketInstance.on("saved_messages", (data) => {
       setMessages(data.messages);
+      setHasMoreMessages(data.hasMore);
+      setCurrentPage(1);
+    });
+
+    socketInstance.on("more_messages", (data) => {
+      setMessages(prev => [...data.messages, ...prev]);
+      setHasMoreMessages(data.hasMore);
+      setCurrentPage(prev => prev + 1);
+      setIsLoadingMoreMessages(false);
     });
 
     return () => {
@@ -213,6 +245,7 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
       socketInstance.off("chat_room_members_list");
       socketInstance.off("message");
       socketInstance.off("saved_messages");
+      socketInstance.off("more_messages");
       socketInstance.off("joined_room");
     };
   }, [socketInstance, user]);
@@ -252,6 +285,13 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (activeRoom) {
+      setCurrentPage(1);
+      setHasMoreMessages(false);
+    }
+  }, [activeRoom?.id_chat_room]);
+
   const value = useMemo(
     () => ({
       rooms,
@@ -259,6 +299,8 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
       messages,
       userRooms,
       activeRoom,
+      hasMoreMessages,
+      isLoadingMoreMessages,
       joinChatRoom,
       leaveChatRoom,
       sendMessage,
@@ -266,14 +308,17 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
       createChatRoom,
       enterChatRoom,
       editMessage,
-      deleteMessage
+      deleteMessage,
+      loadMoreMessages
     }),
     [
       rooms, 
       chatRoomMembers, 
       messages,
       activeRoom, 
-      userRooms, 
+      userRooms,
+      hasMoreMessages,
+      isLoadingMoreMessages,
       joinChatRoom, 
       leaveChatRoom, 
       sendMessage, 
@@ -281,7 +326,8 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
       createChatRoom,
       enterChatRoom,
       editMessage,
-      deleteMessage
+      deleteMessage,
+      loadMoreMessages
     ]
   );
 

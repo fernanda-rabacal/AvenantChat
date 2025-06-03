@@ -25,8 +25,8 @@ export class ChatRoomService {
     return this.repository.getChatRoomMembers(id_chat_room)
   }
 
-  async getChatRoomMessages(id_chat_room: number) {
-    return this.repository.getChatRoomMessages(id_chat_room)
+  async getChatRoomMessages(id_chat_room: number, page = 1, limit = 150) {
+    return this.repository.getChatRoomMessages(id_chat_room, page, limit)
   }
 
   async getUserRooms(id_user: number) {

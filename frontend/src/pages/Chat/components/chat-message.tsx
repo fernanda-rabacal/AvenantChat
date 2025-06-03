@@ -9,12 +9,14 @@ import { cn } from "@/utils/utils"
 import { formatTimestamp } from "@/utils/formatTimestamp"
 import { useChat } from "@/hooks/useChat"
 import type { IChatMessage } from "@/@types/interfaces"
+import { useAuth } from "@/hooks/useAuth"
 
 interface IChatMessageItemProps {
   message: IChatMessage
   shouldGroup: boolean
   isLastMessage: boolean
-  messagesEndRef: RefObject<HTMLDivElement | null>
+  messagesEndRef?: RefObject<HTMLDivElement | null>
+  className?: string
 }
 
 export function ChatMessageItem({
@@ -22,6 +24,7 @@ export function ChatMessageItem({
   shouldGroup,
   isLastMessage,
   messagesEndRef,
+  className
 }: IChatMessageItemProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -31,6 +34,8 @@ export function ChatMessageItem({
   const { editMessage, deleteMessage } = useChat();
   const isSystem = message.user?.name === "System";
   const hideTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const { user } = useAuth();
+  const isOwnMessage = message.user?.id_user === user?.id_user;
 
   const handleHideEditButton = (hide: boolean) => {
     if (hide) {
@@ -73,6 +78,8 @@ export function ChatMessageItem({
         "group flex flex-1 relative",
         shouldGroup ? "mt-1 pt-0" : "pt-5",
         isSystem ? "bg-gray-200 p-1 m-4 rounded-3xl" : "",
+        isOwnMessage ? "justify-end" : "justify-start",
+        className
       )}
     >
       {!isSystem &&
@@ -118,7 +125,11 @@ export function ChatMessageItem({
         setShowEditButton(true)
       }}
       onMouseLeave={() => setShowEditButton(false)}
-      className="flex items-center pb-1 border-b-2 border-transparent hover:border-gray-100 transition-border"
+      className={cn(
+        "flex items-center pb-1 border-b-2 border-transparent hover:border-gray-100 transition-border",
+        isOwnMessage ? "justify-end" : "justify-start",
+        className
+      )}
       >
       {messageContent}
       <div className={cn("hidden", (showEditButton || isDropdownOpen) ? "block" : "hidden")}>

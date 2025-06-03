@@ -210,7 +210,9 @@ export class ChatRoomRepository {
     return chatRoomMembers;
   }
 
-  async getChatRoomMessages(id_chat_room: number, limit = 150) {
+  async getChatRoomMessages(id_chat_room: number, page = 1, limit = 150) {
+    const skip = (page - 1) * limit;
+
     const chatRoomMessages = await this.prisma.chatMessages.findMany({
       where: {
         id_chat_room,
@@ -227,6 +229,10 @@ export class ChatRoomRepository {
           } 
         },
       },
+      orderBy: {
+        sent_at: 'desc'
+      },
+      skip,
       take: limit
     });
 
@@ -235,7 +241,10 @@ export class ChatRoomRepository {
       user: msg.user,
     }));
 
-    return formattedMessages;
+    return {
+      messages: formattedMessages.reverse(),
+      hasMore: formattedMessages.length === limit
+    };
   }
 
   async getUserRooms(id_user: number) {

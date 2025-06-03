@@ -29,19 +29,31 @@ export default function ChatRoom() {
   const [showMembers, setShowMembers] = useState(true);
   const [showChatList, setShowChatList] = useState(true);
   const [openConfirmLeaveChatModal, setOpenConfirmLeaveChatModal] = useState(false);
+  const [isAtTop, setIsAtTop] = useState(false);
+  const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const isMobile = useMobile();
   const navigate = useNavigate();
-  const { messages, sendMessage, activeRoom, leaveChatRoom } = useChat();
   const { 
-      register,
-      handleSubmit,
-      reset,
-      watch,
-      formState: { isSubmitting }
-    } = useForm<SendMessageFormData>({
-      resolver: zodResolver(sendMessageSchema)
-    });
+    messages, 
+    sendMessage, 
+    activeRoom, 
+    leaveChatRoom,
+    hasMoreMessages,
+    isLoadingMoreMessages,
+    loadMoreMessages 
+  } = useChat();
+
+  const { 
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { isSubmitting }
+  } = useForm<SendMessageFormData>({
+    resolver: zodResolver(sendMessageSchema)
+  });
 
   const message = watch('message');
 
@@ -73,9 +85,41 @@ export default function ChatRoom() {
     navigate('/rooms');
   };
 
+  const handleLoadMore = async () => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    
+    setShouldScrollToBottom(false);
+    await loadMoreMessages();
+  };
+
+  const handleScroll = () => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    setIsAtTop(container.scrollTop === 0);
+    
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+    setShouldScrollToBottom(isNearBottom);
+  };
+
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages]);
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if (shouldScrollToBottom) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, shouldScrollToBottom]);
+
+  useEffect(() => {
+    setShouldScrollToBottom(true);
+  }, [activeRoom]);
 
   useEffect(() => {
     if (isMobile) {
@@ -121,40 +165,49 @@ export default function ChatRoom() {
             buttonLoadingTitle="Leaving..." 
             buttonConfirmTitle="Leave Chat"
             onConfirm={handleLeaveChat}           
-            />
+          />
         </div>
 
-        <div className="flex-1 p-4 overflow-y-auto custom-scroll">
-            {messages.map((message, index) => {
-              const { shouldGroup, isLastMessage } = verifyShoudGroupMessage(message, index, messages);
+        <div ref={messagesContainerRef} className="flex-1 p-4 overflow-y-auto custom-scroll">
+          {hasMoreMessages && isAtTop && (
+            <div className="flex justify-center mb-4">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleLoadMore}
+                disabled={isLoadingMoreMessages}
+              >
+                {isLoadingMoreMessages ? (
+                  <>
+                    <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+                    Loading...
+                  </>
+                ) : (
+                  'Load More Messages'
+                )}
+              </Button>
+            </div>
+          )}
 
-              return (
-                <ChatMessageItem
-                  key={message.id_message}
-                  message={message}
-                  shouldGroup={shouldGroup}
-                  isLastMessage={isLastMessage}
-                  messagesEndRef={messagesEndRef}
-                />
-              );
-            })}
-            <div ref={messagesEndRef} className="w-0 h-0"/>
+          {messages.map((message, index) => {
+            const { shouldGroup, isLastMessage } = verifyShoudGroupMessage(message, index, messages);
+
+            return (
+              <ChatMessageItem
+                key={message.id_message}
+                message={message}
+                shouldGroup={shouldGroup}
+                isLastMessage={isLastMessage}
+                messagesEndRef={messagesEndRef}
+                className="message-item"
+              />
+            );
+          })}
+          <div ref={messagesEndRef} className="w-0 h-0"/>
         </div>
 
         <div className="p-4 border-t">
           <form onSubmit={handleSubmit(handleSendMessage)} className="flex items-center space-x-2">
-            {/* <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="flex-shrink-0"
-              onClick={() =>
-                toast("File uploads are not implemented in this demo")
-              }
-            >
-              <Plus size={20} />
-            </Button> */}
-
             <div className="relative flex-1">
               <Input
                 id="message"
@@ -174,7 +227,7 @@ export default function ChatRoom() {
         toggleMembersList={toggleMembersList} 
         isMobile={isMobile} 
         showMembers={showMembers} 
-        />
+      />
     </main>
   )
 }
