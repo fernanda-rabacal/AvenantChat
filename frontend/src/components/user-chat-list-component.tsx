@@ -4,6 +4,12 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from "@/components/ui/tooltip";
 import { SettingsDropdown } from "./settings-dropdown";
 
 import type { IChatRoom } from "@/@types/interfaces";
@@ -37,36 +43,49 @@ export function UserChatList({ showChatList, isMobile, toggleUserChatList }: IUs
   return (
     <>
        {isMobile && (
-        <Button 
-          size="icon" 
-          className={cn("fixed top-15 -left-3 z-50", isMobile && showChatList ? "left-72" : "")} 
-          onClick={toggleUserChatList}
-        >
-          {showChatList ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                size="icon" 
+                className={cn("fixed top-20 -left-3 z-50", isMobile && showChatList ? "left-66" : "")} 
+                onClick={toggleUserChatList}
+              >
+                {showChatList ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              {showChatList ? "Hide Chat List" : "Show Chat List"}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
 
       <section
         className={cn(
           "h-full bg-muted/100 w-80 flex-shrink-0 flex flex-col border-r transition-all duration-300 ease-in-out",
           showChatList ? "translate-x-0 w-80" : "-translate-x-full w-0",
-          isMobile && showChatList ? "fixed inset-y-0 left-0 z-40 w-70" : "",
+          isMobile && showChatList ? "fixed inset-y-0 left-0 z-40 w-70" : isMobile ? "fixed" : "",
         )}
       >
         <NavLink 
           to={isChatRoom ? "/rooms" : "/"} 
           className={cn(
-            "flex justify-center pt-2", 
+            "flex justify-center my-6", 
             isMobile && !showChatList ? "element-hidden" : "element-visible")}
           >
-          <Button variant="link">
+          <Button className="w-[80%]">
             <ChevronLeft size={24} />
             {isChatRoom ? "Chat Rooms" : "Home" }
           </Button>
         </NavLink>
 
         <div className="p-4 border-b">
-          <h3 className="font-semibold text-sm text-muted-foreground">Your Chats</h3>
+          <h3 className={cn(
+            "font-semibold text-sm text-muted-foreground",
+            isMobile && !showChatList ? "element-hidden" : "element-visible")}>
+              Your Chats
+            </h3>
         </div>
         <ScrollArea className="flex-1 overflow-y-auto custom-scroll">
           {userRooms.map(chatRoom => {
