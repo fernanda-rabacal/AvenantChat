@@ -91,14 +91,12 @@ export default function ChatRoom() {
     const container = messagesContainerRef.current;
     if (!container) return;
 
-    // Save current viewport state
     const firstChild = container.firstElementChild as HTMLElement;
     const initialHeight = firstChild?.offsetTop || 0;
     
     setShouldScrollToBottom(false);
     await loadMoreMessages();
 
-    // After loading, restore viewport position
     requestAnimationFrame(() => {
       if (container && firstChild) {
         const newHeight = firstChild.offsetTop;
@@ -114,7 +112,6 @@ export default function ChatRoom() {
 
     setIsAtTop(container.scrollTop === 0);
     
-    // Check if we're near bottom to enable auto-scroll
     const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
     setShouldScrollToBottom(isNearBottom);
   };
@@ -133,7 +130,6 @@ export default function ChatRoom() {
     }
   }, [messages, shouldScrollToBottom]);
 
-  // Reset scroll behavior when changing rooms
   useEffect(() => {
     setShouldScrollToBottom(true);
   }, [activeRoom]);
