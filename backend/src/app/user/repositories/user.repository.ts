@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service'; 
+import { PrismaService } from '../../../db/prisma.service'; 
 import { CreateUserDto } from '../dto/create-user.dto';
 import { encryptData } from '../../../util/crypt';
 import { UpdateUserDto } from '../dto/update-user.dto';
+import { NotFoundError } from '../../../common/errors/types/NotFoundError';
 
 @Injectable()
 export class UserRepository {
@@ -38,6 +39,10 @@ export class UserRepository {
         id_user,
       },
     });
+
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
 
     const { password, ...rest } = user;
 

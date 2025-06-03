@@ -4,6 +4,7 @@ import { CreateChatRoomDto } from './dto/create-chat-room.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guard/jwt.guard';
 import { AuthTokenDto } from '../auth/dto/auth-token.dto';
+import { Request } from 'express';
 
 @Controller('chat-room')
 export class ChatRoomController {
@@ -52,7 +53,7 @@ export class ChatRoomController {
   @Post('/join')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  async join(@Req() req: Request  & { user: AuthTokenDto }, @Body() id_chat_room: number) {
+  async join(@Req() req: Request & { user: AuthTokenDto }, @Body('id_chat_room') id_chat_room: number) {
     try {
       return this.chatRoomService.joinChatRoom({ id_chat_room, id_user: req.user.id_user });
     } catch (err) {
@@ -65,7 +66,7 @@ export class ChatRoomController {
   @Post('/leave')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  async leave(@Req() req: Request  & { user: AuthTokenDto }, @Body() id_chat_room: number) {
+  async leave(@Req() req: Request & { user: AuthTokenDto }, @Body('id_chat_room') id_chat_room: number) {
     try {
       return this.chatRoomService.leaveChatRoom({ id_chat_room, id_user: req.user.id_user });
     } catch (err) {

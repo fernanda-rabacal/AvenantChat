@@ -56,7 +56,9 @@ export class ChatRoomGateway
     }
 
     try {
-      const payload = this.jwtService.verify<AuthPayload>(token);
+      const payload = this.jwtService.verify<AuthPayload>(token, {
+        secret: process.env.NODE_ENV === 'test' ? 'test-secret' : process.env.SECRET,
+      });
 
       client.id_user = payload.id_user;
       client.name = payload.name;
