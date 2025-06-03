@@ -33,33 +33,35 @@ export function RoomCardItem({ room }: IRoomCardItemProps) {
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow cursor-pointer sm:max-h-[12rem]">
+    <Card className="hover:shadow-lg transition-shadow cursor-pointer sm:max-h-[15rem] h-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg truncate">{room.name}</CardTitle>
       </CardHeader>
-      <CardContent className="pt-0">
-        <CardDescription className="mb-4 line-clamp-2">{room.description}</CardDescription>
-        <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-          <div className="flex items-center space-x-1">
-            <Users className="h-4 w-4" />
-            <span>{room.members_count} members</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <MessageCircle className="h-4 w-4" />
-            <span>{formatTimestamp(room.last_activity)}</span>
+      <CardContent className="pt-0 flex flex-col h-full">
+        <div className="flex-1">
+          <CardDescription className="mb-4 line-clamp-2">{room.description}</CardDescription>
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <div className="flex items-center space-x-1">
+              <Users className="h-4 w-4" />
+              <span>{room.members_count} members</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <MessageCircle className="h-4 w-4" />
+              <span>{formatTimestamp(room.last_activity)}</span>
+            </div>
           </div>
         </div>
-        {
-          userAlreadyInRoom ? (
-            <Button className="w-full" onClick={() => handleEnterRoom(room)} variant ={"ghost"}>
+        <div className="mt-4">
+          {userAlreadyInRoom ? (
+            <Button className="w-full" onClick={() => handleEnterRoom(room)} variant="ghost">
               Enter Room
             </Button>
           ) : (
-            <Button className="w-full" onClick={() => handleJoinRoom(room)} variant ={"default"}>
+            <Button className="w-full" onClick={() => handleJoinRoom(room)} variant="default">
               Join Room
             </Button>
-          )
-        }    
+          )}
+        </div>
       </CardContent>
     </Card>
   )

@@ -236,14 +236,9 @@ export class ChatRoomRepository {
       take: limit
     });
 
-    const formattedMessages = chatRoomMessages.map((msg) => ({
-      ...msg,
-      user: msg.user,
-    }));
-
     return {
-      messages: formattedMessages.reverse(),
-      hasMore: formattedMessages.length === limit
+      messages: chatRoomMessages.reverse(),
+      hasMore: chatRoomMessages.length === limit
     };
   }
 
@@ -295,7 +290,7 @@ export class ChatRoomRepository {
 
   async sendMessage(message_infos_props: ISendMessageProps) {
     let chatMember: ChatRoomMember & { user: IUser }
-    
+
     if(message_infos_props.user_email && message_infos_props.user_email === this.systemEmail) {
       chatMember = await this.getSystemChatMember(message_infos_props.id_chat_room)
     } else {
@@ -403,7 +398,9 @@ export class ChatRoomRepository {
       }
     })
 
-    if (chatRoomsMember) return;
+    if (chatRoomsMember) {
+      throw new ConflictError("User already in this room.");
+    };
 
     const newChatRoomMember = await this.prisma.chatRoomMember.create({
       data: {
@@ -441,7 +438,9 @@ export class ChatRoomRepository {
       }
     })
 
-    if (!chatRoomsMember) return;
+    if (!chatRoomsMember) {
+      throw new ConflictError("User doesn't belong in this room.");
+    };
 
     const removedChatRoomMember = await this.prisma.chatRoomMember.delete({
       where: {

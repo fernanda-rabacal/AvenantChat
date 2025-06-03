@@ -239,14 +239,16 @@ export function ChatContextProvider({ children }: ChatContextProviderProps) {
     });
 
     socketInstance.on("saved_messages", (data) => {
-      setMessages(data.messages);
-      setHasMoreMessages(data.hasMore);
+      if (data.messages) {
+        setMessages(data.messages);
+      }
+      setHasMoreMessages(data.hasMore ? data.hasMore : false);
       setCurrentPage(1);
     });
 
     socketInstance.on("more_messages", (data) => {
-      setMessages(prev => [...data.messages, ...prev]);
-      setHasMoreMessages(data.hasMore);
+      setMessages(prev => [...data.messages ? data.messages : [], ...prev]);
+      setHasMoreMessages(data.hasMore ? data.hasMore : false);
       setCurrentPage(prev => prev + 1);
       setIsLoadingMoreMessages(false);
     });
