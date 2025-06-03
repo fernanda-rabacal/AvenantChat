@@ -9,7 +9,7 @@ import {
 } from "react";
 import { setCookie, destroyCookie, parseCookies } from 'nookies';
 
-import { api, setAuthInterceptor } from "@/lib/axios";
+import { api, setAuthInterceptor, removeAuthInterceptor } from "@/lib/axios";
 import type { ILoginData, IRegisterData } from "@/@types/auth";
 import type { IUser } from "@/@types/interfaces";
 import { manageError } from "@/utils/manageError";
@@ -45,6 +45,7 @@ export function AuthContextProvider({ children } : IAuthProps) {
     const storageKey = `avenant_active_room_${user.id_user}`;
     localStorage.removeItem(storageKey);
 
+    removeAuthInterceptor();
     setUser(null);
   };
 
