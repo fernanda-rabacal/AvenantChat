@@ -112,6 +112,7 @@ export function ChatMessageItem({
 
   return (
     <div 
+      key={message.id_message}
       onMouseEnter={() => {
         if (hideTimeoutRef.current) clearTimeout(hideTimeoutRef.current)
         setShowEditButton(true)

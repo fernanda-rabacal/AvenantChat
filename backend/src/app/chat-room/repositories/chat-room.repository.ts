@@ -35,8 +35,15 @@ export class ChatRoomRepository {
       },
     });
 
-    await this.prisma.chatRoomMember.create({
-      data: {
+    await this.prisma.chatRoomMember.upsert({
+      where: { 
+        id_chat_room_member: newChatRoom.id_chat_room,
+        user: {
+          id_user: create_chat_room_dto.created_by
+        }
+      }, 
+      update: {},
+      create: {
         id_chat_room: newChatRoom.id_chat_room,
         id_user: systemUser.id_user,
       },

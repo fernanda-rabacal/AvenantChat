@@ -5,6 +5,7 @@ import { io, Socket } from 'socket.io-client';
 import { PrismaModule } from '../src/db/prisma.module';
 import { AuthModule } from '../src/app/auth/auth.module';
 import { ChatRoomModule } from '../src/app/chat-room/chat-room.module';
+import { UserModule } from '../src/app/user/user.module';
 import { CreateChatRoomDto } from '../src/app/chat-room/dto/create-chat-room.dto';
 import { PrismaClient } from '@prisma/client';
 import { ChatRoomService } from '../src/app/chat-room/chat-room.service';
@@ -14,6 +15,7 @@ import { IChatRoom } from '../src/@types/interfaces';
 import { PrismaService } from '../src/db/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { ChatRoomGateway } from '../src/app/chat-room/chat-room.gateway';
 
 describe('ChatRoomController (e2e)', () => {
   let app: INestApplication;
@@ -43,6 +45,7 @@ describe('ChatRoomController (e2e)', () => {
         PrismaModule, 
         AuthModule,
         ChatRoomModule,
+        UserModule,
         JwtModule.register({
           secret: 'test-secret',
           signOptions: { expiresIn: '1d' },
@@ -51,6 +54,7 @@ describe('ChatRoomController (e2e)', () => {
       providers: [
         ChatRoomService, 
         ChatRoomRepository, 
+        ChatRoomGateway,
         {
           provide: PrismaService,
           useValue: prisma,
@@ -117,7 +121,6 @@ describe('ChatRoomController (e2e)', () => {
       path: '/socket.io'
     });
 
-    // Wait for server to be ready
     await new Promise(resolve => setTimeout(resolve, 1000));
   });
 
@@ -244,7 +247,6 @@ describe('ChatRoomController (e2e)', () => {
 
     describe('POST /chat-room/leave', () => {
       it('should leave a chat room', async () => {
-        // First join the room
         await request(app.getHttpServer())
           .post('/chat-room/join')
           .auth(authToken, { type: 'bearer' })
@@ -402,24 +404,39 @@ describe('ChatRoomController (e2e)', () => {
     });
 
     it('should handle joining chat rooms', (done) => {
-      const roomData = {
-        id_chat_room: createdChatRoom.id_chat_room
-      };
+      request(app.getHttpServer())
+        .post('/chat-room')
+        .auth(authToken, { type: 'bearer' })
+        .send(chatRoomData)
+        .then((response) => {
+          const newChatRoom = response.body.created_room;
+          
+          expect(newChatRoom).toBeDefined();
+          expect(newChatRoom.id_chat_room).toBeDefined();
+          expect(typeof newChatRoom.id_chat_room).toBe('number');
 
-      clientSocket.emit('join_chat', roomData);
+          console.log('newChatRoom:', newChatRoom);
+          console.log('Emitting join_chat with id_chat_room:', newChatRoom.id_chat_room);
 
-      clientSocket.once('joined_room', (data) => {
-        try {
-          expect(data.id_chat_room).toBe(roomData.id_chat_room);
-          expect(data.name).toBe(createdChatRoom.name);
-          expect(data.ChatRoomMembers).toBeDefined();
-          expect(Array.isArray(data.ChatRoomMembers)).toBe(true);
-          expect(data.ChatRoomMembers.length).toBeGreaterThan(0);
-          done();
-        } catch (err) {
-          done(err);
-        }
-      });
+          expect(clientSocket.connected).toBe(true);
+          
+          clientSocket.emit('join_chat', { id_chat_room: newChatRoom.id_chat_room });
+
+          clientSocket.once('joined_room', (data) => {
+            try {
+              console.log('Received joined_room data:', data);
+              expect(data.id_chat_room).toBe(newChatRoom.id_chat_room);
+              expect(data.name).toBe(newChatRoom.name);
+              expect(data.ChatRoomMembers).toBeDefined();
+              expect(Array.isArray(data.ChatRoomMembers)).toBe(true);
+              expect(data.ChatRoomMembers.length).toBeGreaterThan(0);
+              done();
+            } catch (err) {
+              done(err);
+            }
+          });
+        })
+        .catch((err) => done(err));
     }, 15000);
   });
 }); 

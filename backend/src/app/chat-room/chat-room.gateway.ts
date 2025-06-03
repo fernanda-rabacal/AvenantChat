@@ -21,8 +21,6 @@ import { GatewayAdminGuard } from '../auth/guard/gateway.guard';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 
-const ADMIN = 'Admin'
-
 @UsePipes(new ValidationPipe())
 @WebSocketGateway({
   namespace: 'chat-room',
@@ -56,9 +54,7 @@ export class ChatRoomGateway
     }
 
     try {
-      const payload = this.jwtService.verify<AuthPayload>(token, {
-        secret: process.env.NODE_ENV === 'test' ? 'test-secret' : process.env.SECRET,
-      });
+      const payload = this.jwtService.verify<AuthPayload>(token);
 
       client.id_user = payload.id_user;
       client.name = payload.name;
@@ -103,12 +99,14 @@ export class ChatRoomGateway
     
     this.usesrService.saveUserConnectState(client.id_user, 'disconnected');
 
-    const connectedRoom = await this.chatRoomService.findById(client.id_chat_room)
-    let connectedRoomName: string;
-
-    if (connectedRoom) {
-      connectedRoomName = `${connectedRoomName}-${client.id_chat_room}`;
-      client.leave(connectedRoomName);
+    if (client.id_chat_room) {
+      const connectedRoom = await this.chatRoomService.findById(client.id_chat_room)
+      let connectedRoomName: string;
+  
+      if (connectedRoom) {
+        connectedRoomName = `${connectedRoomName}-${client.id_chat_room}`;
+        client.leave(connectedRoomName);
+      }
     }
 
     const userRooms = await this.chatRoomService.getUserRooms(client.id_user);
@@ -273,6 +271,8 @@ export class ChatRoomGateway
       user_email: this.systemEmail,
       content: `${addedUser.user.name} has joined the chat`
     });
+
+    console.log(id_chat_room, 'id_chat_room');
 
     const room = await this.chatRoomService.findById(id_chat_room);
     const roomName = `${room.chat_room.name}-${id_chat_room}`;

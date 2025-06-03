@@ -17,18 +17,6 @@ services:
     networks:
       - minha_rede
 
-  db-test:
-    container_name: integration-test-db
-    image: postgres:15
-    restart: always
-    environment:
-      - POSTGRES_PASSWORD=docker
-      - POSTGRES_DB=avenant
-    ports:
-      - "5433:5432"
-    networks:
-      - minha_rede
-
   redis:
     image: redis:7
     container_name: redis
