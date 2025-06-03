@@ -209,7 +209,7 @@ export class ChatRoomGateway
 
     client.join(newRoomName);
     this.io.to(newRoomName).emit('chat_room_members_list', { chat_room_members: chatRoomMembers });
-    this.io.to(newRoomName).emit('saved_messages', { messages: savedMessages });
+    this.io.to(newRoomName).emit('saved_messages', savedMessages);
   }
 
   @SubscribeMessage('leave_chat')
@@ -297,5 +297,22 @@ export class ChatRoomGateway
     client.emit(`joined_room`, room.chat_room);
     this.io.to(roomName).emit('saved_messages', { messages: savedMessages });
     this.io.to(roomName).emit('chat_room_members_list', { chat_room_members: room.members });
+  }
+
+  @SubscribeMessage('load_more_messages')
+  @UseGuards(GatewayAdminGuard)
+  async loadMoreMessages(
+    @MessageBody() payload: { id_chat_room: number; page: number },
+    @ConnectedSocket() client: SocketWithAuth,
+  ): Promise<void> {
+    const { id_chat_room, page } = payload;
+    
+    this.logger.debug(`Loading more messages for chat ${id_chat_room}, page ${page}`);
+
+    const chatRoom = await this.chatRoomService.findById(id_chat_room);
+    const roomName = `${chatRoom.chat_room.name}-${id_chat_room}`;
+    const messages = await this.chatRoomService.getChatRoomMessages(id_chat_room, page);
+
+    client.emit('more_messages', messages);
   }
 }

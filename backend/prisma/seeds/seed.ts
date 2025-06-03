@@ -1,10 +1,12 @@
 import { PrismaClient } from '@prisma/client';
 import { createUsers } from './createUsersSeeder';
+import { createMessages } from './createMessagesSeeder';
 
 const prisma = new PrismaClient();
 
 async function main() {
   await createUsers(prisma);
+  await createMessages(prisma);
 }
 
 main()
