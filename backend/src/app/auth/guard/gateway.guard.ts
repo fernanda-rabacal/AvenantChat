@@ -25,7 +25,9 @@ export class GatewayAdminGuard implements CanActivate {
     }
 
     try {
-      const user = this.jwtService.verify<AuthPayload>(token);
+      const user = this.jwtService.verify<AuthPayload>(token, {
+        secret: process.env.NODE_ENV === 'test' ? 'test-secret' : process.env.SECRET,
+      });
 
       this.logger.debug(`Validating admin using token payload`, user);
 

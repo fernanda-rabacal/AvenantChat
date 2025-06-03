@@ -18,18 +18,25 @@ export class SocketIOAdapter extends IoAdapter {
   createIOServer(port: number, options?: ServerOptions) {
     const clientPort = parseInt(this.configService.get('CLIENT_PORT'));
     const clientURL = this.configService.get('CLIENT_URL');
+    const isTest = process.env.NODE_ENV === 'test';
+
+    this.logger.debug(`Creating IO Server on port ${port}`);
+    this.logger.debug(`Test mode: ${isTest}`);
 
     const cors = {
-      origin: [
-        `http://localhost:${clientPort}`,
-        `http://localhost:${clientPort + 1}`,
-        `http://localhost:${clientPort + 2}`,
-        `http://localhost:${clientPort + 3}`,
-        clientURL,
-        new RegExp(`^http://192\\.168\\.1\\.([1-9]|[1-9]\\d):${clientPort}$`),
-      ],
+     origin: isTest 
+      ? true 
+      : [
+          `http://localhost:${clientPort}`,
+          `http://localhost:${clientPort + 1}`,
+          `http://localhost:${clientPort + 2}`,
+          `http://localhost:${clientPort + 3}`,
+          clientURL,
+          new RegExp(`^http://192\\.168\\.1\\.([1-9]|[1-9]\\d):${clientPort}$`),
+        ],
+        credentials: true,
     };
-
+    
     this.logger.log('Configuring SocketIO server with custom CORS options', {
       cors,
     });

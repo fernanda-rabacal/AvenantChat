@@ -3,7 +3,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UserService } from '../user/user.service';
 import { JwtModule } from '@nestjs/jwt';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../db/prisma.service';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UserRepository } from '../user/repositories/user.repository';
@@ -15,7 +15,7 @@ import { LocalStrategy } from './strategies/local.strategy';
   imports: [
     PassportModule,
     JwtModule.register({
-      secret: process.env.SECRET,
+      secret: process.env.NODE_ENV === 'test' ? 'test-secret' : process.env.SECRET,
     }),
   ],
   controllers: [AuthController],

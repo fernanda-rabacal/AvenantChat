@@ -7,24 +7,21 @@ import { DatabaseInterceptor } from './src/common/errors/interceptors/database.i
 import { UnauthorizedInterceptor } from './src/common/errors/interceptors/unauthorized.interceptor';
 import { NotFoundInterceptor } from './src/common/errors/interceptors/not-found.interceptor';
 import { ConfigService } from '@nestjs/config';
-import { SocketIOAdapter } from 'src/adapters/socket-io.adapter';
+import { SocketIOAdapter } from './src/adapters/socket-io.adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     logger: ['log', 'error', 'warn', 'debug', 'verbose'],
   });
-  const config = new DocumentBuilder()
-    .setTitle('Simple blog')
-    .setDescription('Simple blog API description')
-    .setVersion('1.0')
-    .build();
-
   const configService = app.get(ConfigService);
   const clientPort = parseInt(configService.get('CLIENT_PORT'));
   const clientURL = configService.get('CLIENT_URL');
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+  const docConfig = new DocumentBuilder()
+    .setTitle('Avenant Chat API')
+    .setDescription('Api para disponibilizar os serviços do avenant chat.')
+    .addBearerAuth()
+    .build();
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -52,7 +49,10 @@ async function bootstrap() {
     ],
   });
   app.useWebSocketAdapter(new SocketIOAdapter(app, configService));
-
+  
+  const document = SwaggerModule.createDocument(app, docConfig);
+  SwaggerModule.setup('docs', app, document);
+  
   await app.listen(process.env.PORT || 8080, '0.0.0.0');
 }
 bootstrap();

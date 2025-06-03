@@ -16,6 +16,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/guard/jwt.guard';
 import { AuthTokenDto } from '../auth/dto/auth-token.dto';
+import { UpdateConnectionStateDto } from './dto/update-connection-state.dto';
 
 @ApiTags('User')
 @Controller('/users')
@@ -92,6 +93,25 @@ export class UserController {
   async update(@Param('id_user') id_user: string, @Body() update_user_dto: UpdateUserDto) {
     try {
       return await this.userService.update(+id_user, update_user_dto);
+    } catch (err) {
+      this.logger.error(err);
+
+      throw err;
+    }
+  }
+
+  @Patch('/:id_user/connection-state')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  async updateConnectionState(
+    @Param('id_user') id_user: string,
+    @Body() updateConnectionStateDto: UpdateConnectionStateDto,
+  ) {
+    try {
+      return await this.userService.saveUserConnectState(
+        +id_user,
+        updateConnectionStateDto.connection_state,
+      );
     } catch (err) {
       this.logger.error(err);
 
