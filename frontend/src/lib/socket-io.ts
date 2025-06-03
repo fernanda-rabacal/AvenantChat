@@ -16,7 +16,7 @@ export const createSocketInstance = (userId: string | number): Socket => {
     room = JSON.parse(savedActiveRoom);
   }
 
-  return io(`${process?.env?.VITE_API_URL}/chat-room`, {
+  return io(`${import.meta.env.VITE_API_URL}/chat-room`, {
     autoConnect: false,
     withCredentials: true,
     transports: ["websocket"],
