@@ -21,7 +21,7 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
   const clientPort = parseInt(configService.get('CLIENT_PORT'));
-  const clientURL = parseInt(configService.get('CLIENT_URL'));
+  const clientURL = configService.get('CLIENT_URL');
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
