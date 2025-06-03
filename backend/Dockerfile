@@ -9,7 +9,6 @@ RUN npm install
 RUN npm install -g @nestjs/cli
 
 COPY . .
-COPY .env .env
 
 RUN dos2unix /avenant-api/entrypoint.sh && chmod +x /avenant-api/entrypoint.sh
 
