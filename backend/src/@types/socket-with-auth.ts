@@ -1,7 +1,6 @@
 import { User } from '@prisma/client';
 import { Socket } from 'socket.io';
 
-// guard types
 export type AuthPayload = User;
 
 export type SocketWithAuth = Socket & {
