@@ -3,6 +3,12 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from "@/components/ui/tooltip";
 import { cn } from "@/utils/utils";
 import { useChat } from "@/hooks/useChat";
 
@@ -18,20 +24,29 @@ export function ChatMembersList({ showMembers, isMobile, toggleMembersList }: IC
   return (
     <>
       {isMobile && (
-        <Button 
-          size="icon" 
-          className={cn("fixed top-15 -right-3 z-50", isMobile && showMembers ? "right-68" : "")} 
-          onClick={toggleMembersList}
-        >
-          {showMembers ?  <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                size="icon" 
+                className={cn("fixed top-20 -right-3 z-50", isMobile && showMembers ? "right-66" : "")} 
+                onClick={toggleMembersList}
+              >
+                {showMembers ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              {showMembers ? "Hide Members List" : "Show Members List"}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
       
       <section
         className={cn(
-          "bg-muted/90 w-60 flex-shrink-0 border-l transition-all duration-300 ease-in-out",
-          showMembers ? "translate-x-0 w-60" : "translate-x-full w-0",
-          isMobile && showMembers ? "fixed inset-y-0 right-0 z-40 w-72" : "",
+          "h-full bg-muted/100 w-80 flex-shrink-0 border-l transition-all duration-300 ease-in-out",
+          showMembers ? "translate-x-0 w-80" : "translate-x-full w-0",
+          isMobile && showMembers ? "fixed inset-y-0 right-0 z-40 w-72" : isMobile ? "fixed" : "",
           isMobile && !showMembers ? "element-hidden" : "element-visible"
         )}
       >  

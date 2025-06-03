@@ -46,21 +46,21 @@ export default function ChatRoomsListPage() {
   }, []);
 
   return (
-    <main className="flex h-screen w-screen bg-background gap-12">
+    <main className="flex h-screen w-screen bg-background md:gap-12">
       <UserChatList 
         showChatList={showChatList} 
         isMobile={isMobile}
         toggleUserChatList={toggleUserChatList}
         />
         
-      <div className="flex-1 pr-12 max-h-screen flex flex-col justify-between">
+      <div className="flex-1 px-4 md:pr-12 max-h-screen flex flex-col justify-between">
         <Header />
 
         <div className="container mx-auto px-4 py-4">
-          <div className="mb-8 flex items-center justify-between">
+          <div className="mb-8 flex items-center justify-between flex-col md:flex-row">
             <div>
               <h1 className="text-4xl font-bold mb-2">Chat Rooms</h1>
-              <p className="text-muted-foreground text-lg">Join conversations and connect with communities</p>
+              <p className="text-muted-foreground text-lg mb-6 md:mb-0">Join conversations and connect with communities</p>
             </div>
 
             <CreateRoomModal />
@@ -68,16 +68,16 @@ export default function ChatRoomsListPage() {
 
           <div className="mb-4 space-y-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
               <Input
                 placeholder="Search chat rooms..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 max-w-md"
+                className="p-6 pl-10 max-w-md"
               />
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-4 md:gap-2 mt-8">
               {categories.map((category) => (
                 <Button
                   key={category}
@@ -91,14 +91,14 @@ export default function ChatRoomsListPage() {
             </div>
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto custom-scroll p-3 mb-4 grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredRooms.map((room) => (
-            <RoomCardItem key={room.id_chat_room} room={room} />
-          ))}
-        </div>
-
-        {filteredRooms.length === 0 && (
-          <div className="text-center py-12">
+        {filteredRooms.length > 0 ? (
+          <div className="flex-1 overflow-y-auto custom-scroll p-3 mb-4 flex flex-col lg:grid lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {filteredRooms.map((room) => (
+              <RoomCardItem key={room.id_chat_room} room={room} />
+            ))}
+          </div>
+        ) : (
+          <div className="flex-1 text-center py-6">
             <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No chat rooms found</h3>
             <p className="text-muted-foreground">Try adjusting your search terms or filters</p>
