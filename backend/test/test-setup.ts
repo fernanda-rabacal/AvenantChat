@@ -2,7 +2,6 @@ import { execSync } from 'child_process';
 import { PrismaClient } from '@prisma/client';
 import { PostgreSqlContainer } from '@testcontainers/postgresql';
 
-// Singleton instance
 let globalPrisma: PrismaClient | null = null;
 let globalContainer: any = null;
 
@@ -35,7 +34,6 @@ export default async function setup() {
       });
     }
 
-    // Set up global test database object
     globalThis.__TEST_DB__ = {
       container: globalContainer,
       prisma: globalPrisma,

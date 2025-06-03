@@ -23,7 +23,6 @@ export async function createMessages(prisma: PrismaClient) {
     }
   });
 
-  // Create chat room member for the user
   await prisma.chatRoomMember.create({
     data: {
       id_chat_room: chatRoom.id_chat_room,
@@ -31,19 +30,14 @@ export async function createMessages(prisma: PrismaClient) {
     }
   });
 
-  console.log('Creating 301 messages...');
-  
-  // Create 301 messages with increasing timestamps
   const messages = Array.from({ length: 301 }, (_, i) => ({
     content: faker.lorem.sentence(),
     id_chat_room: chatRoom.id_chat_room,
     id_user: user.id_user,
-    sent_at: new Date(Date.now() - (301 - i) * 60000) // Each message 1 minute apart
+    sent_at: new Date(Date.now() - (301 - i) * 60000) 
   }));
 
   await prisma.chatMessages.createMany({
     data: messages
   });
-
-  console.log('Created test chat room with 301 messages for pagination testing');
 } 

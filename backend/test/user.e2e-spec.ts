@@ -115,6 +115,18 @@ describe('UserController', () => {
 
       expect(res.body.message).toBe('Invalid Credentials');
     });
+
+    it('should reject login with incorrect password', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/login')
+        .send({
+          email: 'emailteste@email.com',
+          password: 'wrongpassword',
+        })
+        .expect(401);
+
+      expect(res.body.message).toBe('Invalid Credentials');
+    });
   });
 
   describe('POST /users', () => {

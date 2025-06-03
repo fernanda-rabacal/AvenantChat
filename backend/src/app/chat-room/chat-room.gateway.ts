@@ -116,7 +116,6 @@ export class ChatRoomGateway
     userRooms.forEach(room => {
       const roomName = `${room.name}-${room.id_chat_room}`;
       this.logger.log(roomName)
-      console.log(room.members)
       
       this.io.to(roomName).emit('chat_room_members_list', { chat_room_members: room.members });
     })
@@ -277,8 +276,6 @@ export class ChatRoomGateway
       user_email: this.systemEmail,
       content: `${addedUser.user.name} has joined the chat`
     });
-
-    console.log(id_chat_room, 'id_chat_room');
 
     const room = await this.chatRoomService.findById(id_chat_room);
     const roomName = `${room.chat_room.name}-${id_chat_room}`;

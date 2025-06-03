@@ -88,8 +88,6 @@ describe('ChatRoomController (e2e)', () => {
       });
     });
 
-    console.log(`Test server listening on port ${port}`);
-
     const loginResponse = await request(app.getHttpServer())
       .post('/login')
       .send({
@@ -107,7 +105,6 @@ describe('ChatRoomController (e2e)', () => {
     };
 
     const socketUrl = `http://localhost:${port}`;
-    console.log(`Connecting to socket.io server at ${socketUrl}`);
 
     clientSocket = io(`${socketUrl}/chat-room`, {
       auth: {
@@ -414,17 +411,12 @@ describe('ChatRoomController (e2e)', () => {
           expect(newChatRoom).toBeDefined();
           expect(newChatRoom.id_chat_room).toBeDefined();
           expect(typeof newChatRoom.id_chat_room).toBe('number');
-
-          console.log('newChatRoom:', newChatRoom);
-          console.log('Emitting join_chat with id_chat_room:', newChatRoom.id_chat_room);
-
           expect(clientSocket.connected).toBe(true);
           
           clientSocket.emit('join_chat', { id_chat_room: newChatRoom.id_chat_room });
 
           clientSocket.once('joined_room', (data) => {
             try {
-              console.log('Received joined_room data:', data);
               expect(data.id_chat_room).toBe(newChatRoom.id_chat_room);
               expect(data.name).toBe(newChatRoom.name);
               expect(data.ChatRoomMembers).toBeDefined();
