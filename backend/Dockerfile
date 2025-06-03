@@ -9,13 +9,12 @@ RUN npm install
 RUN npm install -g @nestjs/cli
 
 COPY . .
-COPY .env .env
 
 RUN dos2unix /avenant-api/entrypoint.sh && chmod +x /avenant-api/entrypoint.sh
 
 RUN chown -R node:node /avenant-api
 USER node
 
-RUN npm run build && npx prisma generate
+RUN  npx prisma generate && npm run build
 
 ENTRYPOINT ["/avenant-api/entrypoint.sh"]
