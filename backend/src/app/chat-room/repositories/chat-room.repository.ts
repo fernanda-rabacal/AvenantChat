@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { ChatRoomMember } from '@prisma/client';
 
 import { CreateChatRoomDto } from '../dto/create-chat-room.dto';
-import { PrismaService } from 'src/prisma/prisma.service'; 
-import { ISendMessageProps, IJoinChatProps, ILeaveChatProps, IUser } from 'src/@types/interfaces';
-import { ConflictError } from 'src/common/errors/types/ConflictError';
-import { encryptData } from 'src/util/crypt';
-import { SystemError } from 'src/common/errors/types/SystemError';
+import { PrismaService } from '../../../db/prisma.service';
+import { ISendMessageProps, IJoinChatProps, ILeaveChatProps, IUser } from '../../../@types/interfaces';
+import { ConflictError } from '../../../common/errors/types/ConflictError';
+import { encryptData } from '../../../util/crypt';
+import { SystemError } from '../../../common/errors/types/SystemError';
 
 @Injectable()
 export class ChatRoomRepository {
@@ -35,8 +35,15 @@ export class ChatRoomRepository {
       },
     });
 
-    await this.prisma.chatRoomMember.create({
-      data: {
+    await this.prisma.chatRoomMember.upsert({
+      where: { 
+        id_chat_room_member: newChatRoom.id_chat_room,
+        user: {
+          id_user: create_chat_room_dto.created_by
+        }
+      }, 
+      update: {},
+      create: {
         id_chat_room: newChatRoom.id_chat_room,
         id_user: systemUser.id_user,
       },

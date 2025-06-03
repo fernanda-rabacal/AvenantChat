@@ -66,6 +66,11 @@ export function AuthModal({ isOpen, setIsOpen }: IAuthModalProps) {
   
       setIsOpen(false)
       navigate('/rooms')
+    } else {
+      toast.error(
+          authMode === "login"
+            ? "There was an error while trying to log you, please try again"
+            : "There was an error while trying to create your account, please try again")
     }
   };
 

@@ -3,7 +3,7 @@ import { UserService } from '../user/user.service';
 import { AuthLoginDto } from './dto/auth-login.dto';
 import { JwtService } from '@nestjs/jwt';
 import { AuthTokenDto } from './dto/auth-token.dto';
-import { compareEncrypedData } from 'src/util/crypt';
+import { compareEncrypedData } from '../../util/crypt';
 
 @Injectable()
 export class AuthService {
