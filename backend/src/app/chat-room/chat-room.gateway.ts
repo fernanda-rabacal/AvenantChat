@@ -54,16 +54,16 @@ export class ChatRoomGateway
     }
 
     try {
-      const payload = this.jwtService.verify<AuthPayload>(token);
+      const user = this.jwtService.verify<AuthPayload>(token);
 
-      client.id_user = payload.id_user;
-      client.name = payload.name;
+      client.user = user;
+      client.name = user.name;
 
       this.logger.debug(`Socket connected with userID: ${client.id_user} and name: "${client.name}"`);
       this.logger.log(`WS Client with id: ${client.id_user} connected!`);
       this.logger.debug(`Number of connected sockets: ${sockets.size}`);
 
-      await this.usesrService.saveUserConnectState(client.id_user, 'connected')
+      await this.usesrService.saveUserConnectState(client.user.id_user, 'connected')
 
       if (room && room.id_chat_room) {
         client.id_chat_room = room.id_chat_room;
@@ -79,7 +79,7 @@ export class ChatRoomGateway
         });
       }
 
-      const userRooms = await this.chatRoomService.getUserRooms(client.id_user);
+      const userRooms = await this.chatRoomService.getUserRooms(client.user.id_user);
       userRooms.forEach(room => {
         const roomName = `${room.name}-${room.id_chat_room}`;
         
@@ -100,7 +100,7 @@ export class ChatRoomGateway
     this.logger.log(`Disconnected socket id: ${client.id}`);
     this.logger.debug(`Number of connected sockets: ${sockets.size}`);
     
-    this.usesrService.saveUserConnectState(client.id_user, 'disconnected');
+    this.usesrService.saveUserConnectState(client.user.id_user, 'disconnected');
 
     if (client.id_chat_room) {
       const connectedRoom = await this.chatRoomService.findById(client.id_chat_room)
@@ -112,7 +112,7 @@ export class ChatRoomGateway
       }
     }
 
-    const userRooms = await this.chatRoomService.getUserRooms(client.id_user);
+    const userRooms = await this.chatRoomService.getUserRooms(client.user.id_user);
     userRooms.forEach(room => {
       const roomName = `${room.name}-${room.id_chat_room}`;
       this.logger.log(roomName)
@@ -133,14 +133,13 @@ export class ChatRoomGateway
     @ConnectedSocket() client: SocketWithAuth
   ): Promise<void> {
     const { message, id_chat_room, chat_room_name } = payload;
-    const { id_user } = client;
     const connectedRoomName = `${chat_room_name}-${id_chat_room}`;
     
-    this.logger.debug(`userID: ${client.id_user} sent a message to room ${chat_room_name}: ${message}`);
+    this.logger.debug(`userID: ${client.user.id_user} sent a message to room ${chat_room_name}: ${message}`);
 
     const savedMessage = await this.chatRoomService.sendMessage({
-      id_user,
       id_chat_room,
+      id_user: client.user.id_user,
       content: message
     });
 
@@ -157,7 +156,7 @@ export class ChatRoomGateway
     }, 
     @ConnectedSocket() client: SocketWithAuth
   ): Promise<void> {
-    this.logger.debug(`userID: ${client.id_user} is attempting to edit a message`);
+    this.logger.debug(`userID: ${client.user.id_user} is attempting to edit a message`);
     const { new_message, id_message } = payload;
 
     const connectedRoom = await this.chatRoomService.findById(client.id_chat_room);
@@ -173,7 +172,7 @@ export class ChatRoomGateway
     @MessageBody('id_message') id_message: number,
     @ConnectedSocket() client: SocketWithAuth
   ): Promise<void> {
-    this.logger.debug(`userID: ${client.id_user} is attempting to delete a message`);
+    this.logger.debug(`userID: ${client.user.id_user} is attempting to delete a message`);
 
     const connectedRoom = await this.chatRoomService.findById(client.id_chat_room);
     const connectedRoomName = `${connectedRoom.chat_room.name}-${connectedRoom.chat_room.id_chat_room}`;
@@ -210,7 +209,10 @@ export class ChatRoomGateway
     newRoomName = `${newChatRoom.chat_room.name}-${newChatRoom.chat_room.id_chat_room}`;
 
     client.join(newRoomName);
-    this.io.to(newRoomName).emit('chat_room_members_list', { chat_room_members: chatRoomMembers });
+
+    this.io.to(newRoomName).emit('chat_room_members_list', { 
+      chat_room_members: chatRoomMembers 
+    });
     this.io.to(newRoomName).emit('saved_messages', {
       messages: savedMessages.messages,
       hasMore: savedMessages.hasMore
@@ -220,21 +222,19 @@ export class ChatRoomGateway
   @SubscribeMessage('leave_chat')
   @UseGuards(GatewayAdminGuard)
   async leaveChatRoom(@MessageBody('id_chat_room') id_chat_room: number, @ConnectedSocket() client: SocketWithAuth): Promise<void> {
-    const { id_user } = client;
-
-    this.logger.debug(`Attempting to remove user ${id_user} from chat ${id_chat_room}`);
+    this.logger.debug(`Attempting to remove user ${client.user.id_user} from chat ${id_chat_room}`);
 
     const chatRoom = await this.chatRoomService.findById(id_chat_room);
     const roomName = `${chatRoom.chat_room.name}-${id_chat_room}`;
     const removedUser = await this.chatRoomService.leaveChatRoom({
       id_chat_room,
-      id_user,
+      id_user: client.user.id_user,
     });
 
-    const userRooms = await this.chatRoomService.getUserRooms(id_user);
+    const userRooms = await this.chatRoomService.getUserRooms(client.user.id_user);
     const chatRoomMembers = await this.chatRoomService.getChatRoomMembers(id_chat_room);
     const savedMessage = await this.chatRoomService.sendMessage({
-      id_user,
+      id_user: client.user.id_user,
       id_chat_room,
       user_email: this.systemEmail,
       content: `${removedUser.user.name} has left the chat`
@@ -253,7 +253,7 @@ export class ChatRoomGateway
     @MessageBody('id_chat_room') id_chat_room: number,
     @ConnectedSocket() client: SocketWithAuth,
   ): Promise<void> {
-    this.logger.debug(`Attempting to add user ${client.id_user} in chat ${id_chat_room}`);
+    this.logger.debug(`Attempting to add user ${client.user.id_user} in chat ${id_chat_room}`);
 
     if (client.id_chat_room) {
       const prevRoom = await this.chatRoomService.findById(client.id_chat_room);
@@ -264,22 +264,21 @@ export class ChatRoomGateway
       }
     }
 
-    const { id_user } = client;
     const addedUser = await this.chatRoomService.joinChatRoom({
       id_chat_room,
-      id_user,
+      id_user: client.user.id_user,
     });
 
     const savedMessage = await this.chatRoomService.sendMessage({
-      id_user,
       id_chat_room,
+      id_user: client.user.id_user,
       user_email: this.systemEmail,
       content: `${addedUser.user.name} has joined the chat`
     });
 
     const room = await this.chatRoomService.findById(id_chat_room);
     const roomName = `${room.chat_room.name}-${id_chat_room}`;
-    const userRooms = await this.chatRoomService.getUserRooms(id_user);
+    const userRooms = await this.chatRoomService.getUserRooms(client.user.id_user);
     const savedMessages = await this.chatRoomService.getChatRoomMessages(id_chat_room);
     
     client.id_chat_room = room.chat_room.id_chat_room;

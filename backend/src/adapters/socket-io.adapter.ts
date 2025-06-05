@@ -8,6 +8,7 @@ import { UnauthorizedError } from 'src/common/errors/types/UnauthorizedError';
 
 export class SocketIOAdapter extends IoAdapter {
   private readonly logger = new Logger(SocketIOAdapter.name);
+
   constructor(
     private app: INestApplicationContext,
     private configService: ConfigService,
@@ -49,7 +50,7 @@ export class SocketIOAdapter extends IoAdapter {
     const jwtService = this.app.get(JwtService);
     const server: Server = super.createIOServer(port, optionsWithCORS);
 
-    server.of('chat-rooms').use(createTokenMiddleware(jwtService, this.logger));
+    server.of('chat-room').use(createTokenMiddleware(jwtService, this.logger));
 
     return server;
   }
@@ -63,10 +64,10 @@ const createTokenMiddleware =
     logger.debug(`Validating auth token before connection: ${token}`);
 
     try {
-      const payload = jwtService.verify(token);
+      const user = jwtService.verify(token);
 
-      socket.id_user = payload.id_user;
-      socket.id_chat_room = payload.id_chat_room;
+      socket.id_user = user.id_user;
+      socket.id_chat_room = user.id_chat_room;
       next();
     } catch (err) {
       logger.warn('Invalid JWT Token');

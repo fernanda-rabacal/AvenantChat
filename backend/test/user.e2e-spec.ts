@@ -4,7 +4,6 @@ import { PrismaModule } from '../src/db/prisma.module';
 import { AuthModule } from '../src/app/auth/auth.module';
 import { UserModule } from '../src/app/user/user.module';
 import { INestApplication } from '@nestjs/common';
-import { CreateUserDto } from '../src/app/user/dto/create-user.dto';
 import { UserRepository } from '../src/app/user/repositories/user.repository';
 import * as request from 'supertest';
 import { IUser } from '../src/@types/interfaces';
@@ -175,6 +174,26 @@ describe('UserController', () => {
           is_online: false,
         }),
       );
+    });
+  });
+
+  describe('GET /users/token', () => {
+    it('should get user by token', async () => {
+      const loginResponse = await request(app.getHttpServer())
+        .post('/login')
+        .send({
+          email: 'emailteste@email.com',
+          password: '123456',
+        });
+
+      const res = await request(app.getHttpServer())
+        .get('/users/token')
+        .auth(loginResponse.body.token, { type: loginResponse.body.type })
+        .expect(200);
+      expect(res.body.id_user).toBeDefined();
+      expect(res.body.name).toEqual(users[0].name);
+      expect(res.body.email).toEqual(users[0].email);
+      expect(res.body.created_at).toBeDefined();
     });
   });
 
