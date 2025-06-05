@@ -36,7 +36,6 @@ export class GatewayAdminGuard implements CanActivate {
       }
 
       socket.user = user;
-      socket.id_user = user.id_user;
       socket.name = user.name;
 
       return true;
