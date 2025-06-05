@@ -73,7 +73,10 @@ export class ChatRoomGateway
 
         const savedMessages = await this.chatRoomService.getChatRoomMessages(client.id_chat_room);
         
-        this.io.to(roomName).emit('saved_messages', savedMessages)
+        this.io.to(roomName).emit('saved_messages', {
+          messages: savedMessages.messages,
+          hasMore: savedMessages.hasMore
+        });
       }
 
       const userRooms = await this.chatRoomService.getUserRooms(client.id_user);
@@ -113,7 +116,6 @@ export class ChatRoomGateway
     userRooms.forEach(room => {
       const roomName = `${room.name}-${room.id_chat_room}`;
       this.logger.log(roomName)
-      console.log(room.members)
       
       this.io.to(roomName).emit('chat_room_members_list', { chat_room_members: room.members });
     })
@@ -209,7 +211,10 @@ export class ChatRoomGateway
 
     client.join(newRoomName);
     this.io.to(newRoomName).emit('chat_room_members_list', { chat_room_members: chatRoomMembers });
-    this.io.to(newRoomName).emit('saved_messages', { messages: savedMessages });
+    this.io.to(newRoomName).emit('saved_messages', {
+      messages: savedMessages.messages,
+      hasMore: savedMessages.hasMore
+    });
   }
 
   @SubscribeMessage('leave_chat')
@@ -272,8 +277,6 @@ export class ChatRoomGateway
       content: `${addedUser.user.name} has joined the chat`
     });
 
-    console.log(id_chat_room, 'id_chat_room');
-
     const room = await this.chatRoomService.findById(id_chat_room);
     const roomName = `${room.chat_room.name}-${id_chat_room}`;
     const userRooms = await this.chatRoomService.getUserRooms(id_user);
@@ -295,7 +298,27 @@ export class ChatRoomGateway
     client.emit('message', joinedChatMessage);
     client.emit('user_rooms_list', { rooms: userRooms });
     client.emit(`joined_room`, room.chat_room);
-    this.io.to(roomName).emit('saved_messages', { messages: savedMessages });
+    this.io.to(roomName).emit('saved_messages', {
+      messages: savedMessages.messages,
+      hasMore: savedMessages.hasMore
+    });
     this.io.to(roomName).emit('chat_room_members_list', { chat_room_members: room.members });
+  }
+
+  @SubscribeMessage('load_more_messages')
+  @UseGuards(GatewayAdminGuard)
+  async loadMoreMessages(
+    @MessageBody() payload: { id_chat_room: number; page: number },
+    @ConnectedSocket() client: SocketWithAuth,
+  ): Promise<void> {
+    const { id_chat_room, page } = payload;
+    
+    this.logger.debug(`Loading more messages for chat ${id_chat_room}, page ${page}`);
+
+    const chatRoom = await this.chatRoomService.findById(id_chat_room);
+    const roomName = `${chatRoom.chat_room.name}-${id_chat_room}`;
+    const messages = await this.chatRoomService.getChatRoomMessages(id_chat_room, page);
+
+    client.emit('more_messages', messages);
   }
 }

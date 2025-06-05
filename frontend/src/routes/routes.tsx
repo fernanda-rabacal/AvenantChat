@@ -1,4 +1,3 @@
-// src/router.ts
 import { createBrowserRouter } from 'react-router-dom';
 import ChatRoomsListPage from '@/pages/RoomsList/rooms-list-page';
 import ChatRoom from '@/pages/Chat/chat';

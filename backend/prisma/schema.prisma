@@ -32,8 +32,8 @@ model ChatRoom {
   created_by_id Int
 
   created_by      User             @relation(fields: [created_by_id], references: [id_user])
-  ChatRoomMembers ChatRoomMember[]
-  ChatMessages    ChatMessages[]
+  ChatRoomMembers ChatRoomMember[] @relation("RoomMembers")
+  ChatMessages    ChatMessages[]   @relation("RoomMessages")
 
   @@map("chat_rooms")
 }
@@ -43,8 +43,8 @@ model ChatRoomMember {
   id_user             Int
   id_chat_room        Int
 
-  user         User           @relation(fields: [id_user], references: [id_user])
-  chat_room    ChatRoom       @relation(fields: [id_chat_room], references: [id_chat_room])
+  user      User     @relation(fields: [id_user], references: [id_user])
+  chat_room ChatRoom @relation("RoomMembers", fields: [id_chat_room], references: [id_chat_room], onDelete: Cascade)
 
   @@unique([id_user, id_chat_room])
   @@index([id_chat_room])
@@ -61,8 +61,8 @@ model ChatMessages {
   id_user      Int
   id_chat_room Int
 
-  user                              User            @relation(fields: [id_user], references: [id_user])
-  chat_room                         ChatRoom        @relation(fields: [id_chat_room], references: [id_chat_room])
+  user      User     @relation(fields: [id_user], references: [id_user])
+  chat_room ChatRoom @relation("RoomMessages", fields: [id_chat_room], references: [id_chat_room], onDelete: Cascade)
 
   @@index([id_user, sent_at])
   @@map("chat_messages")

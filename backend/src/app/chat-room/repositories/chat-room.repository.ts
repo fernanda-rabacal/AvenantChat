@@ -210,7 +210,9 @@ export class ChatRoomRepository {
     return chatRoomMembers;
   }
 
-  async getChatRoomMessages(id_chat_room: number, limit = 150) {
+  async getChatRoomMessages(id_chat_room: number, page = 1, limit = 150) {
+    const skip = (page - 1) * limit;
+
     const chatRoomMessages = await this.prisma.chatMessages.findMany({
       where: {
         id_chat_room,
@@ -227,15 +229,17 @@ export class ChatRoomRepository {
           } 
         },
       },
+      orderBy: {
+        sent_at: 'desc'
+      },
+      skip,
       take: limit
     });
 
-    const formattedMessages = chatRoomMessages.map((msg) => ({
-      ...msg,
-      user: msg.user,
-    }));
-
-    return formattedMessages;
+    return {
+      messages: chatRoomMessages.reverse(),
+      hasMore: chatRoomMessages.length === limit
+    };
   }
 
   async getUserRooms(id_user: number) {
@@ -286,7 +290,7 @@ export class ChatRoomRepository {
 
   async sendMessage(message_infos_props: ISendMessageProps) {
     let chatMember: ChatRoomMember & { user: IUser }
-    
+
     if(message_infos_props.user_email && message_infos_props.user_email === this.systemEmail) {
       chatMember = await this.getSystemChatMember(message_infos_props.id_chat_room)
     } else {
@@ -394,7 +398,9 @@ export class ChatRoomRepository {
       }
     })
 
-    if (chatRoomsMember) return;
+    if (chatRoomsMember) {
+      throw new ConflictError("User already in this room.");
+    };
 
     const newChatRoomMember = await this.prisma.chatRoomMember.create({
       data: {
@@ -432,7 +438,9 @@ export class ChatRoomRepository {
       }
     })
 
-    if (!chatRoomsMember) return;
+    if (!chatRoomsMember) {
+      throw new ConflictError("User doesn't belong in this room.");
+    };
 
     const removedChatRoomMember = await this.prisma.chatRoomMember.delete({
       where: {
