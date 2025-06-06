@@ -49,12 +49,32 @@ export class ChatRoomGateway
 
     if (!token) {
       this.logger.error('No token provided');
-      client.disconnect();
+      client.emit('auth_error', {
+        message: 'No token provided',
+      });
+
+      setTimeout(() => {
+        client.disconnect();
+      }, 100);  
+
       return;
     }
 
     try {
       const user = this.jwtService.verify<AuthPayload>(token);
+
+      if (!user) {
+        this.logger.error('Invalid token');
+        client.emit('auth_error', {
+          message: 'Invalid token',
+        });
+
+        setTimeout(() => {
+          client.disconnect();
+        }, 100);
+
+        return;
+      }
 
       client.user = user;
       client.name = user.name;
@@ -90,7 +110,14 @@ export class ChatRoomGateway
 
     } catch (error) {
       this.logger.error('Invalid token', error);
-      client.disconnect();
+  
+      client.emit('auth_error', {
+        message: 'Invalid token',
+      });
+
+      setTimeout(() => {
+        client.disconnect();
+      }, 100);
     }
   }
 
@@ -99,6 +126,10 @@ export class ChatRoomGateway
 
     this.logger.log(`Disconnected socket id: ${client.id}`);
     this.logger.debug(`Number of connected sockets: ${sockets.size}`);
+
+    if (!client.user) {
+      return;
+    }
     
     this.usesrService.saveUserConnectState(client.user.id_user, 'disconnected');
 

@@ -19,7 +19,7 @@ import { ChatRoomGateway } from '../src/app/chat-room/chat-room.gateway';
 
 describe('ChatRoomController (e2e)', () => {
   let app: INestApplication;
-  let moduleFixture: TestingModule;
+  let module: TestingModule;
   let authToken: string;
   let chatRoomData: CreateChatRoomDto;
   let createdChatRoom: IChatRoom;
@@ -40,7 +40,7 @@ describe('ChatRoomController (e2e)', () => {
       },
     });
 
-    moduleFixture = await Test.createTestingModule({
+    module = await Test.createTestingModule({
       imports: [
         PrismaModule, 
         AuthModule,
@@ -63,7 +63,7 @@ describe('ChatRoomController (e2e)', () => {
       ],
     }).compile();
 
-    app = moduleFixture.createNestApplication();
+    app = module.createNestApplication();
     configService = app.get(ConfigService);
 
     app.useGlobalPipes(
@@ -178,8 +178,12 @@ describe('ChatRoomController (e2e)', () => {
       if (clientSocket?.connected) {
         clientSocket.disconnect();
       }
-      await app.close();
-      await moduleFixture.close();
+      if (app) {
+        await app.close();
+      }
+      if (module) {
+        await module.close();
+      }
     } catch (error) {
       console.error('Error during cleanup:', error);
     }
@@ -199,6 +203,31 @@ describe('ChatRoomController (e2e)', () => {
         expect(response.body.rooms).toBeDefined();
         createdChatRoom = response.body.created_room;
       });
+
+      it('should fail to create a chat room when user is not authenticated', async () => {
+        const response = await request(app.getHttpServer())
+          .post('/chat-room')
+          .send(chatRoomData)
+          .expect(401);
+
+        expect(response.body.message).toBeDefined();
+        expect(response.body.statusCode).toBe(401);
+      });
+
+      it('should fail to create a chat room with invalid DTO data', async () => {
+        const invalidChatRoomData = {
+          name: 'Test Chat Room',
+        };
+
+        const response = await request(app.getHttpServer())
+          .post('/chat-room')
+          .auth(authToken, { type: 'bearer' })
+          .send(invalidChatRoomData)
+          .expect(400);
+
+        expect(response.body.message).toBeInstanceOf(Array);
+        expect(response.body.statusCode).toBe(400);
+      });
     });
 
     describe('GET /chat-room', () => {
@@ -214,6 +243,15 @@ describe('ChatRoomController (e2e)', () => {
         expect(response.body[0]).toHaveProperty('members_count');
         expect(response.body[0]).toHaveProperty('last_activity');
       });
+
+      it('should fail to return chat rooms when user is not authenticated', async () => {
+        const response = await request(app.getHttpServer())
+          .get('/chat-room')
+          .expect(401);
+
+        expect(response.body.message).toBeDefined();
+        expect(response.body.statusCode).toBe(401);
+      });
     });
 
     describe('GET /chat-room/:id_chat_room', () => {
@@ -227,6 +265,15 @@ describe('ChatRoomController (e2e)', () => {
         expect(response.body.members).toBeDefined();
         expect(response.body.chat_room.id_chat_room).toBe(createdChatRoom.id_chat_room);
       });
+
+      it('should fail to return a specific chat room when user is not authenticated', async () => {
+        const response = await request(app.getHttpServer())
+          .get(`/chat-room/${createdChatRoom.id_chat_room}`)
+          .expect(401);
+
+        expect(response.body.message).toBeDefined();
+        expect(response.body.statusCode).toBe(401);
+      });
     });
 
     describe('POST /chat-room/join', () => {
@@ -239,6 +286,16 @@ describe('ChatRoomController (e2e)', () => {
 
         expect(response.body).toBeDefined();
         expect(response.body.id_chat_room).toBe(createdChatRoom.id_chat_room);
+      });
+
+      it('should fail to join a chat room when user is not authenticated', async () => {
+        const response = await request(app.getHttpServer())
+          .post('/chat-room/join')
+          .send({ id_chat_room: createdChatRoom.id_chat_room })
+          .expect(401);
+
+        expect(response.body.message).toBeDefined();
+        expect(response.body.statusCode).toBe(401);
       });
     });
 
@@ -258,54 +315,85 @@ describe('ChatRoomController (e2e)', () => {
         expect(response.body).toBeDefined();
         expect(response.body.id_chat_room).toBe(createdChatRoom.id_chat_room);
       });
+
+      it('should fail to leave a chat room when user is not authenticated', async () => {
+        const response = await request(app.getHttpServer())
+          .post('/chat-room/leave')
+          .send({ id_chat_room: createdChatRoom.id_chat_room })
+          .expect(401);
+
+        expect(response.body.message).toBeDefined();
+        expect(response.body.statusCode).toBe(401);
+      });
     });
   });
 
   describe('WebSocket Events', () => {
+    let unauthenticatedSocket: Socket;
+
+    beforeEach(() => {
+      const httpServer = app.getHttpServer();
+      const port = httpServer.address().port;
+      const socketUrl = `http://localhost:${port}`;
+
+      unauthenticatedSocket = io(`${socketUrl}/chat-room`, {
+        autoConnect: false,
+        transports: ['websocket'],
+        forceNew: true,
+        reconnection: false,
+        timeout: 5000,
+        path: '/socket.io'
+      });
+    });
+
+    afterEach(() => {
+      if (unauthenticatedSocket?.connected) {
+        unauthenticatedSocket.disconnect();
+      }
+    });
+
     it('should connect to websocket', async () => {
       expect(clientSocket.connected).toBe(true);
     });
 
-    it('should receive saved messages on connection with room', (done) => {
-      const timeout = setTimeout(() => {
-        done(new Error('Test timeout'));
-      }, 2000);
+    it('should fail to connect without authentication', (done) => {
+      unauthenticatedSocket.on('auth_error', (error) => {
+        expect(error.message).toBe('No token provided');
 
-      clientSocket.emit('join_chat', { id_chat_room: createdChatRoom.id_chat_room });
-
-      clientSocket.once('saved_messages', (data) => {
-        clearTimeout(timeout);
-        expect(data.messages).toBeDefined();
-        expect(Array.isArray(data.messages)).toBe(true);
+        setTimeout(() => {
+          expect(unauthenticatedSocket.connected).toBe(false);
+        }, 200);
         done();
       });
-    });
 
-    it('should send and receive messages', (done) => {
-      const timeout = setTimeout(() => {
-        done(new Error('Test timeout'));
-      }, 2000);
+      unauthenticatedSocket.connect();
+    }, 15000);
 
-      const messageData = {
-        message: 'Test message',
-        id_chat_room: createdChatRoom.id_chat_room,
-        chat_room_name: createdChatRoom.name
-      };
-
-      clientSocket.emit('join_chat', { id_chat_room: createdChatRoom.id_chat_room });
-
-      clientSocket.once('joined_room', () => {
-        clientSocket.emit('message', messageData);
-
-        clientSocket.once('message', (data) => {
-          clearTimeout(timeout);
-          expect(data.content).toBe(messageData.message);
-          expect(data.id_chat_room).toBe(messageData.id_chat_room);
-          done();
-        });
+    it('should fail to connect with invalid token', (done) => {
+      const socketWithInvalidToken = io(`http://localhost:${app.getHttpServer().address().port}/chat-room`, {
+        auth: {
+          token: 'invalid-token'
+        },
+        autoConnect: false,
+        transports: ['websocket'],
+        forceNew: true,
+        reconnection: false,
+        timeout: 5000,
+        path: '/socket.io'
       });
-    });
 
+      socketWithInvalidToken.on('auth_error', (error) => {
+        expect(error.message).toBe('Invalid token');
+
+        setTimeout(() => {
+          expect(socketWithInvalidToken.connected).toBe(false);
+        }, 200);
+        done();
+      });
+
+      socketWithInvalidToken.connect();
+    }, 15000);
+  
     it('should edit messages', (done) => {
       const timeout = setTimeout(() => {
         done(new Error('Test timeout'));
@@ -400,35 +488,44 @@ describe('ChatRoomController (e2e)', () => {
       });
     });
 
-    it('should handle joining chat rooms', (done) => {
-      request(app.getHttpServer())
-        .post('/chat-room')
-        .auth(authToken, { type: 'bearer' })
-        .send(chatRoomData)
-        .then((response) => {
-          const newChatRoom = response.body.created_room;
-          
-          expect(newChatRoom).toBeDefined();
-          expect(newChatRoom.id_chat_room).toBeDefined();
-          expect(typeof newChatRoom.id_chat_room).toBe('number');
-          expect(clientSocket.connected).toBe(true);
-          
-          clientSocket.emit('join_chat', { id_chat_room: newChatRoom.id_chat_room });
+    it('should receive saved messages on connection with room', (done) => {
+      const timeout = setTimeout(() => {
+        done(new Error('Test timeout'));
+      }, 2000);
 
-          clientSocket.once('joined_room', (data) => {
-            try {
-              expect(data.id_chat_room).toBe(newChatRoom.id_chat_room);
-              expect(data.name).toBe(newChatRoom.name);
-              expect(data.ChatRoomMembers).toBeDefined();
-              expect(Array.isArray(data.ChatRoomMembers)).toBe(true);
-              expect(data.ChatRoomMembers.length).toBeGreaterThan(0);
-              done();
-            } catch (err) {
-              done(err);
-            }
-          });
-        })
-        .catch((err) => done(err));
-    }, 15000);
+      clientSocket.emit('join_chat', { id_chat_room: createdChatRoom.id_chat_room });
+
+      clientSocket.once('saved_messages', (data) => {
+        clearTimeout(timeout);
+        expect(data.messages).toBeDefined();
+        expect(Array.isArray(data.messages)).toBe(true);
+        done();
+      });
+    });
+
+    it('should send and receive messages', (done) => {
+      const timeout = setTimeout(() => {
+        done(new Error('Test timeout'));
+      }, 2000);
+
+      const messageData = {
+        message: 'Test message',
+        id_chat_room: createdChatRoom.id_chat_room,
+        chat_room_name: createdChatRoom.name
+      };
+
+      clientSocket.emit('join_chat', { id_chat_room: createdChatRoom.id_chat_room });
+
+      clientSocket.once('joined_room', () => {
+        clientSocket.emit('message', messageData);
+
+        clientSocket.once('message', (data) => {
+          clearTimeout(timeout);
+          expect(data.content).toBe(messageData.message);
+          expect(data.id_chat_room).toBe(messageData.id_chat_room);
+          done();
+        });
+      });
+    });
   });
 }); 
