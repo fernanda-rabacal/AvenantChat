@@ -12,12 +12,15 @@ import { encryptData } from '../src/util/crypt';
 import { cleanupDatabase } from './test-setup';
 import { PrismaClient } from '@prisma/client';
 import { ValidationPipe } from '@nestjs/common';
+import { CreateUserDto } from 'src/app/user/dto/create-user.dto';
+import { ConfigService } from '@nestjs/config';
 
 describe('UserController', () => {
   let app: INestApplication;
   let module: TestingModule;
   let users: IUser[];
   let prisma: PrismaClient;
+  let configService: ConfigService;
 
   beforeAll(async () => {
     try {
@@ -28,6 +31,7 @@ describe('UserController', () => {
         providers: [
           UserService,
           UserRepository,
+          ConfigService,
           {
             provide: PrismaService,
             useValue: prisma,
@@ -36,6 +40,8 @@ describe('UserController', () => {
       }).compile();
 
       app = module.createNestApplication();
+      configService = app.get(ConfigService);
+
       app.useGlobalPipes(
         new ValidationPipe({
           whitelist: true,
@@ -43,8 +49,14 @@ describe('UserController', () => {
           transform: true,
         }),
       );
-      await app.init();
 
+      app.enableCors({
+        origin: true,
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+        credentials: true,
+      });
+
+      await app.init();
       await prisma.user.upsert({
         where: { email: 'emailteste@email.com' },
         update: {},
@@ -130,7 +142,7 @@ describe('UserController', () => {
 
   describe('POST /users', () => {
     it('should create a user', async () => {
-      const newUser = {
+      const newUser: CreateUserDto = {
         name: 'Teste usuário 2',
         email: 'emailteste2@email.com',
         password: '123456',
