@@ -5,9 +5,11 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 import { Server, ServerOptions } from 'socket.io';
 import { SocketWithAuth } from 'src/@types/socket-with-auth';
 import { UnauthorizedError } from 'src/common/errors/types/UnauthorizedError';
+import { getCorsOptions } from 'src/util/cors';
 
 export class SocketIOAdapter extends IoAdapter {
   private readonly logger = new Logger(SocketIOAdapter.name);
+
   constructor(
     private app: INestApplicationContext,
     private configService: ConfigService,
@@ -24,17 +26,8 @@ export class SocketIOAdapter extends IoAdapter {
     this.logger.debug(`Test mode: ${isTest}`);
 
     const cors = {
-     origin: isTest 
-      ? true 
-      : [
-          `http://localhost:${clientPort}`,
-          `http://localhost:${clientPort + 1}`,
-          `http://localhost:${clientPort + 2}`,
-          `http://localhost:${clientPort + 3}`,
-          clientURL,
-          new RegExp(`^http://192\\.168\\.1\\.([1-9]|[1-9]\\d):${clientPort}$`),
-        ],
-        credentials: true,
+      origin: isTest ? true : getCorsOptions(clientPort, clientURL),
+      credentials: true,
     };
     
     this.logger.log('Configuring SocketIO server with custom CORS options', {
@@ -49,7 +42,12 @@ export class SocketIOAdapter extends IoAdapter {
     const jwtService = this.app.get(JwtService);
     const server: Server = super.createIOServer(port, optionsWithCORS);
 
-    server.of('chat-rooms').use(createTokenMiddleware(jwtService, this.logger));
+    const chatNamespace = server.of('/chat-room');
+    
+    chatNamespace.use((socket: any, next) => {
+      this.logger.debug('🔑 Chat room middleware executing');
+      return createTokenMiddleware(jwtService, this.logger)(socket, next);
+    });
 
     return server;
   }
@@ -57,20 +55,31 @@ export class SocketIOAdapter extends IoAdapter {
 
 const createTokenMiddleware =
   (jwtService: JwtService, logger: Logger) =>
-  (socket: SocketWithAuth, next) => {
+  (socket: SocketWithAuth, next: (err?: Error) => void) => {
+    logger.debug('🔒 Token middleware start');
+
     const token = socket.handshake.auth.token || socket.handshake.headers['token'];
 
-    logger.debug(`Validating auth token before connection: ${token}`);
+    if (!token) {
+      logger.debug('❌ No token provided in middleware');
+      return next(new Error('No token provided'));
+    }
+  
+    logger.debug(`🔍 Validating token: ${token.substring(0, 10)}...`);
 
     try {
-      const payload = jwtService.verify(token);
+      const user = jwtService.verify(token);
+      logger.debug('✅ Token verified successfully');
 
-      socket.id_user = payload.id_user;
-      socket.id_chat_room = payload.id_chat_room;
+      socket.id_user = user.id_user;
+      socket.id_chat_room = user.id_chat_room;
+
       next();
     } catch (err) {
-      logger.warn('Invalid JWT Token');
+      logger.debug('❌ Token verification failed');
+      const customErr = new UnauthorizedError('Invalid token');
+      logger.warn(customErr.message);
 
-      next(new UnauthorizedError('FORBIDDEN'));
+      next(new Error(customErr.message));
     }
   };

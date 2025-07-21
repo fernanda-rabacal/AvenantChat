@@ -4,7 +4,6 @@ import { PrismaModule } from '../src/db/prisma.module';
 import { AuthModule } from '../src/app/auth/auth.module';
 import { UserModule } from '../src/app/user/user.module';
 import { INestApplication } from '@nestjs/common';
-import { CreateUserDto } from '../src/app/user/dto/create-user.dto';
 import { UserRepository } from '../src/app/user/repositories/user.repository';
 import * as request from 'supertest';
 import { IUser } from '../src/@types/interfaces';
@@ -13,12 +12,15 @@ import { encryptData } from '../src/util/crypt';
 import { cleanupDatabase } from './test-setup';
 import { PrismaClient } from '@prisma/client';
 import { ValidationPipe } from '@nestjs/common';
+import { CreateUserDto } from 'src/app/user/dto/create-user.dto';
+import { ConfigService } from '@nestjs/config';
 
 describe('UserController', () => {
   let app: INestApplication;
   let module: TestingModule;
   let users: IUser[];
   let prisma: PrismaClient;
+  let configService: ConfigService;
 
   beforeAll(async () => {
     try {
@@ -29,6 +31,7 @@ describe('UserController', () => {
         providers: [
           UserService,
           UserRepository,
+          ConfigService,
           {
             provide: PrismaService,
             useValue: prisma,
@@ -37,6 +40,8 @@ describe('UserController', () => {
       }).compile();
 
       app = module.createNestApplication();
+      configService = app.get(ConfigService);
+
       app.useGlobalPipes(
         new ValidationPipe({
           whitelist: true,
@@ -44,8 +49,14 @@ describe('UserController', () => {
           transform: true,
         }),
       );
-      await app.init();
 
+      app.enableCors({
+        origin: true,
+        methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+        credentials: true,
+      });
+
+      await app.init();
       await prisma.user.upsert({
         where: { email: 'emailteste@email.com' },
         update: {},
@@ -131,7 +142,7 @@ describe('UserController', () => {
 
   describe('POST /users', () => {
     it('should create a user', async () => {
-      const newUser = {
+      const newUser: CreateUserDto = {
         name: 'Teste usuário 2',
         email: 'emailteste2@email.com',
         password: '123456',
@@ -175,6 +186,26 @@ describe('UserController', () => {
           is_online: false,
         }),
       );
+    });
+  });
+
+  describe('GET /users/token', () => {
+    it('should get user by token', async () => {
+      const loginResponse = await request(app.getHttpServer())
+        .post('/login')
+        .send({
+          email: 'emailteste@email.com',
+          password: '123456',
+        });
+
+      const res = await request(app.getHttpServer())
+        .get('/users/token')
+        .auth(loginResponse.body.token, { type: loginResponse.body.type })
+        .expect(200);
+      expect(res.body.id_user).toBeDefined();
+      expect(res.body.name).toEqual(users[0].name);
+      expect(res.body.email).toEqual(users[0].email);
+      expect(res.body.created_at).toBeDefined();
     });
   });
 
