@@ -8,6 +8,7 @@ import { UnauthorizedInterceptor } from './src/common/errors/interceptors/unauth
 import { NotFoundInterceptor } from './src/common/errors/interceptors/not-found.interceptor';
 import { ConfigService } from '@nestjs/config';
 import { SocketIOAdapter } from './src/adapters/socket-io.adapter';
+import { getCorsOptions } from 'src/util/cors';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -39,14 +40,7 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: [
-      `http://localhost:${clientPort}`,
-      `http://localhost:${clientPort + 1}`,
-      `http://localhost:${clientPort + 2}`,
-      `http://localhost:${clientPort + 3}`,
-      clientURL,
-      new RegExp(`^http://192\\.168\\.1\\.([1-9]|[1-9]\\d):${clientPort}$`),
-    ],
+    origin: getCorsOptions(clientPort, clientURL),
   });
   app.useWebSocketAdapter(new SocketIOAdapter(app, configService));
   

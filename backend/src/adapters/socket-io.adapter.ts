@@ -5,6 +5,7 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 import { Server, ServerOptions } from 'socket.io';
 import { SocketWithAuth } from 'src/@types/socket-with-auth';
 import { UnauthorizedError } from 'src/common/errors/types/UnauthorizedError';
+import { getCorsOptions } from 'src/util/cors';
 
 export class SocketIOAdapter extends IoAdapter {
   private readonly logger = new Logger(SocketIOAdapter.name);
@@ -25,17 +26,8 @@ export class SocketIOAdapter extends IoAdapter {
     this.logger.debug(`Test mode: ${isTest}`);
 
     const cors = {
-     origin: isTest 
-      ? true 
-      : [
-          `http://localhost:${clientPort}`,
-          `http://localhost:${clientPort + 1}`,
-          `http://localhost:${clientPort + 2}`,
-          `http://localhost:${clientPort + 3}`,
-          clientURL,
-          new RegExp(`^http://192\\.168\\.1\\.([1-9]|[1-9]\\d):${clientPort}$`),
-        ],
-        credentials: true,
+      origin: isTest ? true : getCorsOptions(clientPort, clientURL),
+      credentials: true,
     };
     
     this.logger.log('Configuring SocketIO server with custom CORS options', {
